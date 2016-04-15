@@ -1,0 +1,41 @@
+package soot.toCIL.instructions;
+
+import soot.jimple.Stmt;
+import soot.toCIL.structures.Label;
+
+public class Brtrue implements Instruction{
+
+	private String targetLabel;
+	private Stmt stmt;
+	private Label label;
+	
+	public Brtrue(String targetLabel, Stmt stmt) {
+		this.targetLabel = targetLabel;
+		this.stmt = stmt;
+	}
+	
+	@Override
+	public String getInstruction() {
+		// TODO Auto-generated method stub
+		return "brtrue " + targetLabel;
+	}
+
+	@Override
+	public Stmt getStmt() {
+		// TODO Auto-generated method stub
+		return stmt;
+	}
+
+	@Override
+	public void setLabel(Label label) {
+		// TODO Auto-generated method stub
+		this.label = label;
+	}
+
+	@Override
+	public String getLabel() {
+		// TODO Auto-generated method stub
+		return label.getLabel() + ": ";
+	}
+
+}

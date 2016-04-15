@@ -57,6 +57,7 @@ public class Method implements Body {
 
 		for (Variable v : allParameters) {
 			String comma = (firstParam == true) ? "" : ", ";
+			params += comma;
 			params += v.variableType + " ";
 			params += v.variableName;
 

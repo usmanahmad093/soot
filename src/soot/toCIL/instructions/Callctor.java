@@ -29,6 +29,7 @@ public class Callctor implements Instruction {
 		for (String argumentType : paramTypes) {
 			String comma = (firstArgument) ? "" : ", ";
 			statement += comma + argumentType;
+			firstArgument = false;
 		}
 
 		statement += ")";

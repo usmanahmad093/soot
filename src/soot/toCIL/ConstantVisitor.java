@@ -1,9 +1,5 @@
 package soot.toCIL;
 
-import org.jf.dexlib2.Opcode;
-import org.jf.dexlib2.writer.builder.BuilderReference;
-import org.jf.dexlib2.writer.builder.DexBuilder;
-
 import soot.jimple.AbstractConstantSwitch;
 import soot.jimple.DoubleConstant;
 import soot.jimple.FloatConstant;
@@ -13,7 +9,6 @@ import soot.jimple.Stmt;
 import soot.jimple.StringConstant;
 import soot.toCIL.structures.Constant;
 import soot.toCIL.structures.Type;
-import soot.toDex.instructions.Insn21c;
 
 
 public class ConstantVisitor extends AbstractConstantSwitch {

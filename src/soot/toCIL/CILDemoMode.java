@@ -128,16 +128,10 @@ public class CILDemoMode {
 
 		for (Member member : allMembers) {
 
-			sbForTextFile.append(".field ");
-			sbForTextFile.append(member.getModifier() + " ");
-			sbForTextFile.append(member.getVariableType() + " ");
-			sbForTextFile.append(member.getVariableName());
+			sbForTextFile.append(member.getCILRepresentation());
 			sbForTextFile.append("\n");
 
-			System.out.print(".field ");
-			System.out.print(member.getModifier() + " ");
-			System.out.print(member.getVariableType() + " ");
-			System.out.print(member.getVariableName());
+			System.out.print(member.getCILRepresentation());
 			System.out.print("\n");
 
 		}
@@ -163,10 +157,11 @@ public class CILDemoMode {
 
 	
 		for (SootField sootField : sootFields) {
+			String cilFieldRepresenation = CILFieldBuilder.buildCILField(sootField);
 			String fieldName = sootField.getName();
 			String type = Converter.getInstance().getTypeInString(sootField.getType());
 
-			Member member = new Member(sootField, fieldName, type, false, false);
+			Member member = new Member(cilFieldRepresenation, fieldName, type, false, false);
 			allMembers.add(member);
 		}
 

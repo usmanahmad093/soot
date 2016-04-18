@@ -29,4 +29,15 @@ public class OtherVariables extends Variable {
 		return isFinal;
 	}
 
+
+
+
+
+
+	@Override
+	protected String getCILRepresentation() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

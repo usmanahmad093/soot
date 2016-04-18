@@ -30,4 +30,10 @@ public class Parameter extends Variable {
 		return index;
 	}
 
+	@Override
+	protected String getCILRepresentation() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

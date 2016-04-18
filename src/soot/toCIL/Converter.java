@@ -3,11 +3,16 @@ package soot.toCIL;
 import java.lang.annotation.ElementType;
 
 import soot.ArrayType;
+import soot.Body;
 import soot.RefType;
+import soot.SootField;
+import soot.SootMethod;
 import soot.Type;
 
 public class Converter {
 	private static Converter instance = new Converter();
+	
+	
 	private static final String STRING = "string";
 	private static final String INT32 = "int32";
 	private static final String INT64 = "int64";
@@ -16,7 +21,11 @@ public class Converter {
 	private static final String BOOL = "bool";
 	private static final String CHAR = "char";
 	private static final String UINT8 = "uint8";
+	private static final String INT8 = "int8";
+	private static final String INT16 = "int16";
 	private static final String VOID = "void";
+	
+	
 
 	private Converter() {
 	}
@@ -48,8 +57,8 @@ public class Converter {
 			} else if (refType.getClassName().equals(Long.class.getName())) {
 				return INT64;
 			} else if (refType.getClassName().equals(Byte.class.getName())) {
-				return UINT8;
-			}
+				return INT8;
+			} 
 
 		} else if (askedType instanceof soot.IntType) {
 			return INT32;
@@ -66,7 +75,9 @@ public class Converter {
 		} else if (askedType instanceof soot.VoidType) {
 			return VOID;
 		} else if (askedType instanceof soot.ByteType) {
-			return UINT8;
+			return INT8;
+		} else if(askedType instanceof soot.ShortType) {
+			return INT16;
 		} else if (askedType instanceof soot.ArrayType) {
 			// TODO: arrayTypes überprüfen
 			return "string[]";
@@ -74,6 +85,5 @@ public class Converter {
 
 		return "class " + askedType.toString();
 	}
-	
 	
 }

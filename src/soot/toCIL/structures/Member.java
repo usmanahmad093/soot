@@ -2,40 +2,22 @@ package soot.toCIL.structures;
 
 import soot.SootField;
 
-public class Member extends Variable {
+public class Member extends Variable{
 
 	private String modifier;
 	private boolean isFinal;
 	private boolean isStatic;
+	private String cilField;
 	
-	public Member(SootField sootField, String variableName, String variableType, boolean isFinal, boolean isStatic) {
+	public Member(String cilField, String variableName, String variableType, boolean isFinal, boolean isStatic) {
 		super(variableName, variableType, isFinal);
 		this.isFinal = isFinal;
 		this.isStatic = isStatic;
-		this.modifier = getModifierInString(sootField);
-	}
-	
-	private String getModifierInString(SootField sootField) {
-		String modifier = "";
-		
-		if (sootField.isPrivate()) {
-			modifier = "private";
-		} else if (sootField.isProtected()) {
-			modifier = "family";
-		} else if (sootField.isPublic()) {
-			modifier = "public";
-		}
-		
-		
-		return modifier;
+		this.cilField = cilField;
 	}
 
 	public String getModifier() {
 		return modifier;
-	}
-	
-	public boolean isStatic() {
-		return isStatic;
 	}
 
 	@Override
@@ -52,4 +34,11 @@ public class Member extends Variable {
 	public boolean isFinal() {
 		return isFinal;
 	}
+	
+	
+	public String getCILRepresentation() {
+		return cilField;
+	}
+
+
 }

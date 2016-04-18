@@ -14,6 +14,7 @@ public abstract class Variable {
 	public abstract String getVariableName();
 	public abstract String getVariableType();
 	public abstract boolean isFinal();
+	protected abstract String getCILRepresentation();
 	
 	
 }

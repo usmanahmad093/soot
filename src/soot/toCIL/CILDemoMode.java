@@ -188,12 +188,12 @@ public class CILDemoMode {
 				addVariables(allLocals, cilMethod);
 				addParams(allTypes, cilMethod);
 
-				if (!method.isConstructor()) {//ONLY FOR TEST PURPOSES, TODO: DELETE IT LATER!
-					cilMethod.setRightCILMethod();
-				} else {
+			//	if (!method.isConstructor()) {//ONLY FOR TEST PURPOSES, TODO: DELETE IT LATER!
+			//		cilMethod.setRightCILMethod();
+			//	} else {
 					String cilMethodHeader = CILMethodBuilder.buildCILMethodHeader(method, cilMethod.getAllParameters());
 					cilMethod.setStartBody(cilMethodHeader);
-				}
+			//	}
 
 				transformAndAddInstructions(body.getUnits(), cilMethod);
 				detectMaxStack(cilMethod);

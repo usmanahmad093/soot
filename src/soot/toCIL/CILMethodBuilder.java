@@ -11,6 +11,7 @@ public class CILMethodBuilder {
 	private static final String PRIVATE = "private";
 	private static final String PUBLIC = "public";
 	private static final String PROTECTED = "family";
+	private static final String STATIC = "static";
 	
 
 	
@@ -45,9 +46,42 @@ public class CILMethodBuilder {
 			sb.append(params);
 			sb.append(")");
 			sb.append(" cil managed {");
+		} else {
+			String firstModifier = "";
+			String secondModifier = "instance";
+			if (sootMethod.isPrivate()) {
+				firstModifier = PRIVATE;
+				if (sootMethod.isStatic()) {
+					secondModifier = STATIC;
+				}
+			} else if (sootMethod.isProtected()) {
+				firstModifier = PROTECTED;
+				if (sootMethod.isStatic()) {
+					secondModifier = STATIC;
+				}
+			} else if (sootMethod.isPublic()) {
+				firstModifier = PUBLIC;
+				if (sootMethod.isStatic()) {
+					secondModifier = STATIC;
+				}
+			}
 			
-			
-		} 
+			sb.append(cilMethodHeader);
+			sb.append(" ");
+			sb.append(firstModifier);
+			sb.append(" ");
+			sb.append("hidebysig");
+			sb.append(" ");
+			sb.append(secondModifier);
+			sb.append(" ");
+			sb.append(returnType);
+			sb.append(" ");
+			sb.append(sootMethod.getName());
+			sb.append("(");
+			sb.append(params);
+			sb.append(")");
+			sb.append(" cil managed {");
+		}
 
 		return sb.toString();
 	}

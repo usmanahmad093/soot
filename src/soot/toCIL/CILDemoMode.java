@@ -72,9 +72,10 @@ public class CILDemoMode {
 	public void showJimpleBody(SootClass clazz) {
 		for (SootMethod method : clazz.getMethods()) {
 			Body b = method.retrieveActiveBody();
-			System.out.println(b.toString());;
+			System.out.println(b.toString());
+			;
 		}
-		
+
 	}
 
 	public static CILDemoMode getInstance() {
@@ -91,12 +92,12 @@ public class CILDemoMode {
 		String mainMethodName = Scene.v().getMainMethod().getName();
 
 		for (soot.toCIL.structures.Method m : allMethods) {
-			
+
 			ArrayList<Instruction> allInstructions = m.getInstructions();
 
 			sbForTextFile.append(m.getStartBody() + "\n");
 			System.out.println(m.getStartBody());
-			if(m.getMethodName().equals(mainMethodName)) {
+			if (m.getMethodName().equals(mainMethodName)) {
 				Entrypoint entrypointInstr = new Entrypoint();
 				sbForTextFile.append(entrypointInstr.getInstruction() + "\n");
 				System.out.println(entrypointInstr.getInstruction());
@@ -138,10 +139,6 @@ public class CILDemoMode {
 
 	}
 
-
-
-
-
 	public void transformJimpleToCIL(SootClass clazz) throws ClassNotFoundException {
 
 		String className = clazz.getName();
@@ -155,7 +152,6 @@ public class CILDemoMode {
 		Chain<SootField> sootFields = clazz.getFields();
 		ArrayList<Member> allMembers = new ArrayList<>();
 
-	
 		for (SootField sootField : sootFields) {
 			String cilFieldRepresenation = CILFieldBuilder.buildCILField(sootField);
 			String fieldName = sootField.getName();
@@ -170,10 +166,7 @@ public class CILDemoMode {
 		refClass = new Class(modifier, className, superClass, allMembers);
 
 		for (SootMethod method : clazz.getMethods()) {
-			
-		
-			
-			
+
 			soot.toCIL.structures.Method cilMethod;
 			if (method.isStaticInitializer()) {
 
@@ -194,20 +187,22 @@ public class CILDemoMode {
 
 				addVariables(allLocals, cilMethod);
 				addParams(allTypes, cilMethod);
-				cilMethod.setRightCILMethod();
+
+				if (!method.isConstructor()) {//ONLY FOR TEST PURPOSES, TODO: DELETE IT LATER!
+					cilMethod.setRightCILMethod();
+				} else {
+					String cilMethodHeader = CILMethodBuilder.buildCILMethodHeader(method, cilMethod.getAllParameters());
+					cilMethod.setStartBody(cilMethodHeader);
+				}
 
 				transformAndAddInstructions(body.getUnits(), cilMethod);
 				detectMaxStack(cilMethod);
 			}
-			
-			
 
 			refClass.addMethod(cilMethod);
 		}
 
 	}
-
-	
 
 	private void detectMaxStack(soot.toCIL.structures.Method cilMethod) {
 		int countStackElements = 0;
@@ -259,13 +254,13 @@ public class CILDemoMode {
 				countStackElements -= 2;
 			} else if (instr instanceof soot.toCIL.instructions.Call) {
 				soot.toCIL.instructions.Call callInstr = (soot.toCIL.instructions.Call) instr;
-				
+
 				String returnType = callInstr.getReturnType();
-				
-				if(!returnType.equals("void")) {
+
+				if (!returnType.equals("void")) {
 					countStackElements++;
 				}
-				
+
 			}
 
 			if (maxStack < countStackElements) {
@@ -276,9 +271,9 @@ public class CILDemoMode {
 		cilMethod.setMaxStack(maxStack);
 
 	}
-	
 
-	private void addVariables(Chain<Local> allLocals, soot.toCIL.structures.Method cilMethod) throws ClassNotFoundException {
+	private void addVariables(Chain<Local> allLocals, soot.toCIL.structures.Method cilMethod)
+			throws ClassNotFoundException {
 		ArrayList<OtherVariables> allVariables = new ArrayList<>();
 
 		// Local Variables
@@ -317,8 +312,8 @@ public class CILDemoMode {
 	private void transformAndAddInstructions(PatchingChain<Unit> allUnits, soot.toCIL.structures.Method cilMethod) {
 		ArrayList<OtherVariables> allVariables = cilMethod.getAllVariables();
 		StmtVisitor stmtV = new StmtVisitor(cilMethod, refClass);
-		
-		if(cilMethod.getMethodName().equals("testVirtualInvokeStmt()")) {
+
+		if (cilMethod.getMethodName().equals("testVirtualInvokeStmt()")) {
 			int test = 0;
 		}
 

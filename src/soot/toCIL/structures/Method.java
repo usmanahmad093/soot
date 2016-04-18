@@ -164,6 +164,10 @@ public class Method implements Body {
 	public HashMap<Integer, Integer> getTypeIndexes() {
 		return allTypeIndexes;
 	}
+	
+	public void setStartBody(String startBody) {
+		this.startBody = startBody;
+	}
 
 	@Override
 	public String getStartBody() {

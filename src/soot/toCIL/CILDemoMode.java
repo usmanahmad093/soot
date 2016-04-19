@@ -102,7 +102,7 @@ public class CILDemoMode {
 
 			sbForTextFile.append(m.getStartBody() + "\n");
 			System.out.println(m.getStartBody());
-			if (m.getMethodName().equals(mainMethodName)) {
+			if (m.isMain()) {
 				Entrypoint entrypointInstr = new Entrypoint();
 				sbForTextFile.append(entrypointInstr.getInstruction() + "\n");
 				System.out.println(entrypointInstr.getInstruction());
@@ -192,9 +192,7 @@ public class CILDemoMode {
 			} else {
 				cilMethod = new soot.toCIL.structures.Method(method, refClass);
 			}
-
-			cilMethod.setMethodName(method.getName());
-			cilMethod.setReturnType(Converter.getInstance().getTypeInString(method.getReturnType()));
+	
 
 			if (method.isConcrete()) {
 				Body body = method.retrieveActiveBody();
@@ -204,12 +202,9 @@ public class CILDemoMode {
 				addVariables(allLocals, cilMethod);
 				addParams(allTypes, cilMethod);
 
-			//	if (!method.isConstructor()) {//ONLY FOR TEST PURPOSES, TODO: DELETE IT LATER!
-			//		cilMethod.setRightCILMethod();
-			//	} else {
 					String cilMethodHeader = CILMethodBuilder.buildCILMethodHeader(method, cilMethod.getAllParameters());
 					cilMethod.setStartBody(cilMethodHeader);
-			//	}
+
 
 				transformAndAddInstructions(body.getUnits(), cilMethod);
 				detectMaxStack(cilMethod);
@@ -226,7 +221,7 @@ public class CILDemoMode {
 
 		ArrayList<Instruction> allInstructions = cilMethod.getInstructions();
 
-		if (cilMethod.getReturnType().equals("void")) {
+		if (cilMethod.isVoid()) {
 			maxStack = 8;
 		}
 
@@ -329,9 +324,7 @@ public class CILDemoMode {
 		ArrayList<LocalVariables> allVariables = cilMethod.getAllVariables();
 		StmtVisitor stmtV = new StmtVisitor(cilMethod, refClass);
 
-		if (cilMethod.getMethodName().equals("testVirtualInvokeStmt()")) {
-			int test = 0;
-		}
+
 
 		if (allVariables.size() != 0) {
 			LocalsInit initInstruction = new LocalsInit(allVariables);

@@ -24,14 +24,9 @@ import soot.util.Chain;
  *
  */
 public class Method implements Body {
-	private Class refClass;
 	private int maxStack;
-	private String methodName;
-	private String modifier[];
-	private String returnType;
 	private ArrayList<LocalVariables> allVariables;
 	private ArrayList<Parameter> allParameters;
-	private int labelID;
 	private ArrayList<Instruction> allInstructions;
 	private SootMethod sootMethod;
 	private String startBody;
@@ -43,62 +38,24 @@ public class Method implements Body {
 		allParameters = new ArrayList<>();
 		allTypeIndexes = new HashMap<>();
 		allInstructions = new ArrayList<>();
-		labelID = 0;
-		this.refClass = refClass;
-		this.methodName = sootMethod.getName();
 		this.sootMethod = sootMethod;
-		this.returnType = Converter.getInstance().getTypeInString(sootMethod.getReturnType());
 		startBody = "";
-	}
-
-	public void setRightCILMethod() {
-		String params = "";
-		boolean firstParam = true;
-
-		for (Variable v : allParameters) {
-			String comma = (firstParam == true) ? "" : ", ";
-			params += comma;
-			params += v.variableType + " ";
-			params += v.variableName;
-
-			firstParam = false;
-		}
-		
-		
-		if(sootMethod.isConstructor()) {
-			if(sootMethod.isPublic()) {
-				 startBody = ".method public hidebysig specialname rtspecialname instance " + returnType + " "
-							+ ".ctor" + "(" + params + ") cil managed" + " {";
-			} else if (sootMethod.isPrivate()) {
-				 startBody = ".method private hidebysig specialname rtspecialname instance " + returnType + " "
-							+ ".ctor" + "(" + params + ") cil managed" + " {";
-			}
-		} else {
-			String staticornot =(sootMethod.isStatic())? "static": "instance";
-			
-			if (sootMethod.isPublic()) {
-				startBody = ".method public hidebysig " + staticornot + " " + returnType + " "
-						+ methodName + "(" + params + ") cil managed {";
-			} else if(sootMethod.isPrivate()) {
-				startBody = ".method private hidebysig " + staticornot + " " + returnType + " "
-						+ methodName + "(" + params + ") cil managed {";
-			} else if (sootMethod.isProtected()) {
-				startBody = ".method family hidebysig " + staticornot + " " + returnType + " "
-						+ methodName + "(" + params + ") cil managed {";
-			}
-		}
 	}
 
 	public boolean isConstructor() {
 		return sootMethod.isConstructor();
 	}
 	
+	public boolean isMain() {
+		return (sootMethod.isMain())? true: false;
+	}
+	
 	public boolean isStatic() {
 		return sootMethod.isStatic();
 	}
-
-	public Class getRefClass() {
-		return refClass;
+	
+	public boolean isVoid() {
+		return (sootMethod.getReturnType() instanceof soot.VoidType) ? true:false;
 	}
 
 	public void setMaxStack(int maxStack) {
@@ -124,30 +81,7 @@ public class Method implements Body {
 	public void setTypeIndexes(HashMap<Integer, Integer> allTypeIndexes) {
 		this.allTypeIndexes = allTypeIndexes;
 	}
-
-	public void setMethodName(String methodName) {
-		this.methodName = methodName;
-	}
-
-	public void setModifier(String[] modifier) {
-		this.modifier = modifier;
-	}
-
-	public void setReturnType(String returnType) throws ClassNotFoundException {
-		this.returnType = returnType;
-	}
-
-	public String getMethodName() {
-		return methodName;
-	}
-
-	public String[] getModifier() {
-		return modifier;
-	}
-
-	public String getReturnType() {
-		return returnType;
-	}
+	
 
 	public ArrayList<LocalVariables> getAllVariables() {
 		return allVariables;

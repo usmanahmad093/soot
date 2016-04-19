@@ -9,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.sun.org.apache.xml.internal.serialize.Method;
 
 import jdk.nashorn.internal.codegen.CompilerConstants.Call;
 import jdk.nashorn.internal.runtime.StoredScript;
@@ -52,8 +51,9 @@ import soot.toCIL.instructions.StoreInstruction;
 import soot.toCIL.instructions.Sub;
 import soot.toCIL.instructions.Xor;
 import soot.toCIL.structures.Class;
+import soot.toCIL.structures.LocalVariables;
 import soot.toCIL.structures.Member;
-import soot.toCIL.structures.OtherVariables;
+import soot.toCIL.structures.Method;
 import soot.toCIL.structures.Parameter;
 import soot.util.Chain;
 
@@ -288,9 +288,9 @@ public class CILDemoMode {
 
 	}
 
-	private void addVariables(Chain<Local> allLocals, soot.toCIL.structures.Method cilMethod)
+	private void addVariables(Chain<Local> allLocals, Method cilMethod)
 			throws ClassNotFoundException {
-		ArrayList<OtherVariables> allVariables = new ArrayList<>();
+		ArrayList<LocalVariables> allVariables = new ArrayList<>();
 
 		// Local Variables
 		for (Local l : allLocals) {
@@ -298,7 +298,7 @@ public class CILDemoMode {
 			String type = Converter.getInstance().getTypeInString(l.getType());
 
 			// TODO: wie kann ich den modfier einer lokalen Variable abrufen?
-			OtherVariables var = new OtherVariables(l.getName(), type, false);
+			LocalVariables var = new LocalVariables(l.getName(), type, false);
 			allVariables.add(var);
 		}
 
@@ -326,7 +326,7 @@ public class CILDemoMode {
 	}
 
 	private void transformAndAddInstructions(PatchingChain<Unit> allUnits, soot.toCIL.structures.Method cilMethod) {
-		ArrayList<OtherVariables> allVariables = cilMethod.getAllVariables();
+		ArrayList<LocalVariables> allVariables = cilMethod.getAllVariables();
 		StmtVisitor stmtV = new StmtVisitor(cilMethod, refClass);
 
 		if (cilMethod.getMethodName().equals("testVirtualInvokeStmt()")) {

@@ -77,9 +77,9 @@ import soot.toCIL.instructions.Stfld;
 import soot.toCIL.instructions.StoreInstruction;
 import soot.toCIL.structures.Class;
 import soot.toCIL.structures.Label;
+import soot.toCIL.structures.LocalVariables;
 import soot.toCIL.structures.Member;
 import soot.toCIL.structures.Method;
-import soot.toCIL.structures.OtherVariables;
 import soot.toCIL.structures.Parameter;
 import soot.toCIL.structures.Variable;
 import soot.toDex.LocalRegisterAssignmentInformation;
@@ -144,8 +144,8 @@ public class StmtVisitor implements StmtSwitch {
 			String lhsName = ((Local) lhs).getName();
 			String type = Converter.getInstance().getTypeInString(((Local) lhs).getType());
 
-			OtherVariables otherVariable = new OtherVariables(lhsName, type, false);
-			OtherVariables localVar = (OtherVariables) m.searchforVariableAndGetIt(otherVariable);
+			LocalVariables otherVariable = new LocalVariables(lhsName, type, false);
+			LocalVariables localVar = (LocalVariables) m.searchforVariableAndGetIt(otherVariable);
 
 			if (localVar != null) {
 				instr = new StoreInstruction(localVar, stmt);
@@ -286,12 +286,12 @@ public class StmtVisitor implements StmtSwitch {
 			ldargInstruction = new Ldarg(0, stmt);
 			isThisRefAvailable = true;
 
-			OtherVariables otherVariable = new OtherVariables(lhs.getName(),
+			LocalVariables otherVariable = new LocalVariables(lhs.getName(),
 					Converter.getInstance().getTypeInString(lhs.getType()), false);
 			Variable var = m.searchforVariableAndGetIt(otherVariable);
 
 			if (var != null) {
-				ArrayList<OtherVariables> allVariables = m.getAllVariables();
+				ArrayList<LocalVariables> allVariables = m.getAllVariables();
 				allVariables.remove(var);
 				m.setVariables(allVariables);
 				LocalsInit localsinitInstr = (m.getInstructions().get(0) instanceof LocalsInit)
@@ -337,7 +337,7 @@ public class StmtVisitor implements StmtSwitch {
 			String rhsName = ((Local) rhs).getName();
 			String type = Converter.getInstance().getTypeInString(((Local) rhs).getType());
 
-			OtherVariables otherVariable = new OtherVariables(rhsName, type, false);
+			LocalVariables otherVariable = new LocalVariables(rhsName, type, false);
 			Variable var = m.searchforVariableAndGetIt(otherVariable);
 
 			if (var != null) {

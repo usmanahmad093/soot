@@ -4,13 +4,13 @@ import java.util.ArrayList;
 
 import soot.jimple.Stmt;
 import soot.toCIL.structures.Label;
-import soot.toCIL.structures.OtherVariables;
+import soot.toCIL.structures.LocalVariables;
 
 public class LocalsInit implements Instruction {
 
-	private ArrayList<OtherVariables> localVariables;
+	private ArrayList<LocalVariables> localVariables;
 	
-	public LocalsInit(ArrayList<OtherVariables> localVariables) {
+	public LocalsInit(ArrayList<LocalVariables> localVariables) {
 		// TODO Auto-generated constructor stub
 		this.localVariables = (localVariables != null)? localVariables: new ArrayList<>();
 	}
@@ -21,11 +21,11 @@ public class LocalsInit implements Instruction {
 		return null;
 	}
 	
-	public void setLocalVariables(ArrayList<OtherVariables> localVariables) {
+	public void setLocalVariables(ArrayList<LocalVariables> localVariables) {
 		this.localVariables = localVariables;
 	}
 	
-	public ArrayList<OtherVariables> getLocalVariables() {
+	public ArrayList<LocalVariables> getLocalVariables() {
 		return localVariables;
 	}
 
@@ -45,7 +45,7 @@ public class LocalsInit implements Instruction {
 		String statement = ".locals init (";
 		Integer index = 0;
 		
-		for(OtherVariables v: localVariables) {
+		for(LocalVariables v: localVariables) {
 			String comma = (index == 0) ? "": ",";
 			statement += comma + "[" + index.toString() + "] " + v.getVariableType() + " " + v.getVariableName(); 
 			index++;

@@ -3,7 +3,6 @@ package soot.toCIL.instructions;
 import soot.jimple.Stmt;
 import soot.toCIL.structures.Constant;
 import soot.toCIL.structures.Label;
-import soot.toCIL.structures.OtherVariables;
 import soot.toCIL.structures.Variable;
 
 public class LoadInstruction implements Instruction {

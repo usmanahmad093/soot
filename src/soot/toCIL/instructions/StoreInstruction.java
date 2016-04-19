@@ -2,16 +2,16 @@ package soot.toCIL.instructions;
 
 import soot.jimple.Stmt;
 import soot.toCIL.structures.Label;
-import soot.toCIL.structures.OtherVariables;
+import soot.toCIL.structures.LocalVariables;
 
 public class StoreInstruction implements Instruction {
 
 	private int index;
 	private Stmt stmt;
 	private Label label;
-	private OtherVariables otherVariable;
+	private LocalVariables otherVariable;
 	
-	public StoreInstruction(OtherVariables otherVariable, Stmt stmt) {
+	public StoreInstruction(LocalVariables otherVariable, Stmt stmt) {
 		this.otherVariable = otherVariable;
 		this.stmt = stmt;
 	}

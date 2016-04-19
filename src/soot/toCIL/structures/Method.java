@@ -29,7 +29,7 @@ public class Method implements Body {
 	private String methodName;
 	private String modifier[];
 	private String returnType;
-	private ArrayList<OtherVariables> allVariables;
+	private ArrayList<LocalVariables> allVariables;
 	private ArrayList<Parameter> allParameters;
 	private int labelID;
 	private ArrayList<Instruction> allInstructions;
@@ -109,7 +109,7 @@ public class Method implements Body {
 		return maxStack;
 	}
 
-	public void setVariables(ArrayList<OtherVariables> allVariables) {
+	public void setVariables(ArrayList<LocalVariables> allVariables) {
 		this.allVariables = allVariables;
 	}
 
@@ -149,7 +149,7 @@ public class Method implements Body {
 		return returnType;
 	}
 
-	public ArrayList<OtherVariables> getAllVariables() {
+	public ArrayList<LocalVariables> getAllVariables() {
 		return allVariables;
 	}
 

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import soot.jimple.Stmt;
 import soot.toCIL.structures.Label;
 import soot.toCIL.structures.Member;
-import soot.toCIL.structures.OtherVariables;
 
 public class FieldInit implements Instruction{
 	private Member member;

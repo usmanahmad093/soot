@@ -1,10 +1,9 @@
 package soot.toCIL.instructions;
 
-import java.util.ArrayList;
+
 
 import soot.jimple.Stmt;
 import soot.toCIL.structures.Label;
-import soot.toCIL.structures.OtherVariables;
 
 public class Maxstack implements Instruction{
 	private int maxStack;

@@ -93,15 +93,13 @@ public class StmtVisitor implements StmtSwitch {
 	private Method m;
 	private ArrayList<Instruction> allInstructions;
 	private soot.toCIL.structures.Constant constant;
-	private Class refClass;
 	private boolean isThisRefAvailable = false;
 
-	public StmtVisitor(Method m, Class refClass) {
+	public StmtVisitor(Method m) {
 		constantV = new ConstantVisitor(this);
 		exprV = new ExprVisitor(this, constantV, m);
 		this.m = m;
 		allInstructions = m.getInstructions();
-		this.refClass = refClass;
 	}
 
 	public ArrayList<Instruction> getInstructions() {
@@ -137,7 +135,6 @@ public class StmtVisitor implements StmtSwitch {
 
 	public StoreInstruction BuildStoreInstruction(Value lhs, Stmt stmt) throws ClassNotFoundException {
 		// TODO Auto-generated method stub
-		String instruction = "";
 		StoreInstruction instr = null;
 
 		if (lhs instanceof Local) {

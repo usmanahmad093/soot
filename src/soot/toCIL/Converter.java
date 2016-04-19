@@ -1,13 +1,6 @@
 package soot.toCIL;
 
-import java.lang.annotation.ElementType;
-
-import soot.ArrayType;
-import soot.Body;
 import soot.RefType;
-import soot.SootField;
-import soot.SootMethod;
-import soot.Type;
 
 public class Converter {
 	private static Converter instance = new Converter();

@@ -321,7 +321,7 @@ public class CILDemoMode {
 
 	private void transformAndAddInstructions(PatchingChain<Unit> allUnits, soot.toCIL.structures.Method cilMethod) {
 		ArrayList<LocalVariables> allVariables = cilMethod.getAllVariables();
-		StmtVisitor stmtV = new StmtVisitor(cilMethod, refClass);
+		StmtVisitor stmtV = new StmtVisitor(cilMethod);
 
 
 

@@ -112,7 +112,6 @@ public class ExprVisitor implements ExprSwitch {
 	private Stmt target;
 	private boolean trueComparision;
 	private Method m;
-	private final String METHODTOIGNORE = "valueOf";
 
 	public ExprVisitor(StmtVisitor stmtV, ConstantVisitor constantV, Method m) {
 		this.stmtV = stmtV;
@@ -142,7 +141,6 @@ public class ExprVisitor implements ExprSwitch {
 		// TODO Auto-generated method stub
 		// TODO Über die stmtV expression folgende Parameter übergeben:
 		// v.getOp1(), v.getOp2()
-		String instruction = "";
 
 		Value operand1 = v.getOp1();
 		Value operand2 = v.getOp2();
@@ -161,7 +159,6 @@ public class ExprVisitor implements ExprSwitch {
 		// TODO Auto-generated method stub
 		// TODO Über die stmtV expression folgende Parameter übergeben:
 		// v.getOp1(), v.getOp2()
-		String instruction = "";
 
 		Value operand1 = v.getOp1();
 		Value operand2 = v.getOp2();
@@ -198,8 +195,6 @@ public class ExprVisitor implements ExprSwitch {
 
 	@Override
 	public void caseDivExpr(DivExpr v) {
-		String instruction = "";
-
 		Value operand1 = v.getOp1();
 		Value operand2 = v.getOp2();
 
@@ -252,7 +247,6 @@ public class ExprVisitor implements ExprSwitch {
 		stmtV.buildInstruction(loadInstr1);
 		stmtV.buildInstruction(loadInstr2);
 		stmtV.buildInstruction(bneInstruction);
-		setTrueComparision(false);
 	}
 
 	@Override
@@ -287,7 +281,6 @@ public class ExprVisitor implements ExprSwitch {
 		stmtV.buildInstruction(loadInstr1);
 		stmtV.buildInstruction(loadInstr2);
 		stmtV.buildInstruction(bgtInstruction);
-		setTrueComparision(true);
 	}
 
 	@Override

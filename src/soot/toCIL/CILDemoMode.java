@@ -175,9 +175,8 @@ public class CILDemoMode {
 			allMembers.add(member);
 		}
 
-		// TODO: Modifier abrufen
-		String modifier = "private";
-		refClass = new Class(modifier, className, superClass, allMembers);
+
+		refClass = new Class(allMembers);
 		String startBody = CILClassBuilder.buildCILClass(clazz);
 		refClass.setStartBody(startBody);
 

@@ -70,12 +70,17 @@ public class CILDemoMode {
 	}
 
 	public void showJimpleBody(SootClass clazz) {
+
 		for (SootMethod method : clazz.getMethods()) {
 			Body b = method.retrieveActiveBody();
 			System.out.println(b.toString());
 			;
 		}
 
+	}
+	
+	public void showClass(SootClass clazz) {
+		System.out.println(clazz.toString());
 	}
 
 	public static CILDemoMode getInstance() {
@@ -138,6 +143,15 @@ public class CILDemoMode {
 		}
 
 	}
+	
+	/**
+	 * Only For Testing purposes
+	 */
+	public void demoInnerClass(SootClass clazz) {
+ 		if (clazz.isInnerClass()) {
+			System.out.println("INNER CLASS");
+		}
+	}
 
 	public void transformJimpleToCIL(SootClass clazz) throws ClassNotFoundException {
 
@@ -164,6 +178,8 @@ public class CILDemoMode {
 		// TODO: Modifier abrufen
 		String modifier = "private";
 		refClass = new Class(modifier, className, superClass, allMembers);
+		String startBody = CILClassBuilder.buildCILClass(clazz);
+		refClass.setStartBody(startBody);
 
 		for (SootMethod method : clazz.getMethods()) {
 

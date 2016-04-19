@@ -15,6 +15,7 @@ public class Class implements Body {
 	private String baseClass;
 	private ArrayList<Member> allMembers;
 	private ArrayList<Method> allMethods;
+	private String startBody;
 
 	public Class(String modifier, String className, String baseClass, ArrayList<Member> allMembers) {
 		this.modifier = modifier;
@@ -22,6 +23,24 @@ public class Class implements Body {
 		this.baseClass = baseClass;
 		this.allMembers = allMembers;
 		allMethods = new ArrayList<>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(".cass");
+		sb.append(" ");
+		sb.append(modifier);
+		sb.append(" ");
+		sb.append(" auto ansi beforefieldinit");
+		sb.append(" ");
+		sb.append(className);
+		sb.append(" extends");
+		sb.append(" ");
+		sb.append(baseClass);
+		sb.append(" ");
+		sb.append("{");
+		
+		startBody = sb.toString();
+		
+		
 	}
 	
 	public void addMethod(Method m) {
@@ -52,17 +71,14 @@ public class Class implements Body {
 		return baseClass;
 	}
 
+	public void setStartBody(String startBody) {
+		this.startBody = startBody;
+	}
 
 	@Override
 	public String getStartBody() {
-		// TODO Auto-generated method stub
-		return ".class " 
-				+ modifier 
-				+ " auto ansi beforefieldinit " 
-				+ className
-			    + " extends " 
-				+ baseClass + " "
-				+ "{";
+		
+		return startBody;
 	}
 
 

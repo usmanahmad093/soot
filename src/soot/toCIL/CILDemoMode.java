@@ -309,7 +309,7 @@ public class CILDemoMode {
 		for (Type t : allTypes) {
 			String type = Converter.getInstance().getTypeInString(t);
 
-			Parameter param = new Parameter("param" + String.valueOf(counterParam), type, false, counterParam);
+			Parameter param = new Parameter("param" + String.valueOf(counterParam), type, false);
 			allParameters.add(param);
 			allTypeIndexes.put(t.getNumber(), counterParam);
 

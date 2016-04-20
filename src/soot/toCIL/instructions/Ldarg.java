@@ -18,7 +18,7 @@ public class Ldarg implements Instruction{
 	@Override
 	public String getInstruction() {
 		// TODO Auto-generated method stub
-		return "ldarg." + String.valueOf(index);
+		return "ldarg " + String.valueOf(index);
 	}
 
 

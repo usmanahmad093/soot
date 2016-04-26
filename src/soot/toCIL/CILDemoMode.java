@@ -9,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-
 import jdk.nashorn.internal.codegen.CompilerConstants.Call;
 import jdk.nashorn.internal.runtime.StoredScript;
 import soot.Body;
@@ -66,19 +65,22 @@ public class CILDemoMode {
 	int hashmapSize = 0;
 	public static final String STRANGE_TYPE = "byte";
 
+	int test; 
 	private CILDemoMode() {
 	}
 
 	public void showJimpleBody(SootClass clazz) {
 
+		System.out.println(clazz.getName() + ": ");
 		for (SootMethod method : clazz.getMethods()) {
-			Body b = method.retrieveActiveBody();
-			System.out.println(b.toString());
-			;
+			if (method.isConcrete()) {
+				Body b = method.retrieveActiveBody();
+				System.out.println(b.toString());
+			}
 		}
 
 	}
-	
+
 	public void showClass(SootClass clazz) {
 		System.out.println(clazz.toString());
 	}
@@ -143,12 +145,12 @@ public class CILDemoMode {
 		}
 
 	}
-	
+
 	/**
 	 * Only For Testing purposes
 	 */
 	public void demoInnerClass(SootClass clazz) {
- 		if (clazz.isInnerClass()) {
+		if (clazz.isInnerClass()) {
 			System.out.println("INNER CLASS");
 		}
 	}
@@ -175,7 +177,6 @@ public class CILDemoMode {
 			allMembers.add(member);
 		}
 
-
 		refClass = new Class(allMembers);
 		String startBody = CILClassBuilder.buildCILClass(clazz);
 		refClass.setStartBody(startBody);
@@ -183,15 +184,15 @@ public class CILDemoMode {
 		for (SootMethod method : clazz.getMethods()) {
 
 			soot.toCIL.structures.Method cilMethod;
-			if (method.isStaticInitializer()) {
+			
+			//TODO: staticinitializer
+			//if (method.isStaticInitializer()) {
 
-			}
-			if (method.isConstructor()) {
-				cilMethod = new soot.toCIL.structures.Method(method, refClass);
-			} else {
-				cilMethod = new soot.toCIL.structures.Method(method, refClass);
-			}
-	
+			//}
+
+			cilMethod = new soot.toCIL.structures.Method(method, refClass);
+			String cilMethodHeader = CILMethodBuilder.buildCILMethodHeader(method, cilMethod.getAllParameters());
+			cilMethod.setStartBody(cilMethodHeader);
 
 			if (method.isConcrete()) {
 				Body body = method.retrieveActiveBody();
@@ -201,9 +202,7 @@ public class CILDemoMode {
 				addVariables(allLocals, cilMethod);
 				addParams(allTypes, cilMethod);
 
-					String cilMethodHeader = CILMethodBuilder.buildCILMethodHeader(method, cilMethod.getAllParameters());
-					cilMethod.setStartBody(cilMethodHeader);
-
+				
 
 				transformAndAddInstructions(body.getUnits(), cilMethod);
 				detectMaxStack(cilMethod);
@@ -282,8 +281,7 @@ public class CILDemoMode {
 
 	}
 
-	private void addVariables(Chain<Local> allLocals, Method cilMethod)
-			throws ClassNotFoundException {
+	private void addVariables(Chain<Local> allLocals, Method cilMethod) throws ClassNotFoundException {
 		ArrayList<LocalVariables> allVariables = new ArrayList<>();
 
 		// Local Variables
@@ -322,8 +320,6 @@ public class CILDemoMode {
 	private void transformAndAddInstructions(PatchingChain<Unit> allUnits, soot.toCIL.structures.Method cilMethod) {
 		ArrayList<LocalVariables> allVariables = cilMethod.getAllVariables();
 		StmtVisitor stmtV = new StmtVisitor(cilMethod);
-
-
 
 		if (allVariables.size() != 0) {
 			LocalsInit initInstruction = new LocalsInit(allVariables);

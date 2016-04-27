@@ -1,89 +1,109 @@
 package soot.toCIL;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import soot.SootClass;
 import soot.SootField;
 import soot.SootMethod;
+import soot.toCIL.structures.CILModifiers;
 import soot.toCIL.structures.Parameter;
 import soot.toCIL.structures.Variable;
+import soot.util.Chain;
 
 public class CILMethodBuilder {
-	private static final String PRIVATE = "private";
-	private static final String PUBLIC = "public";
-	private static final String PROTECTED = "family";
-	private static final String STATIC = "static";
 	
 
 	
 	public static String buildCILMethodHeader(SootMethod sootMethod, ArrayList<Parameter> allParameters) {
-		String cilMethodHeader = ".method";
 		String returnType = Converter.getInstance().getTypeInString(sootMethod.getReturnType());
 		String params = getParamsInString(allParameters);
 		StringBuilder sb = new StringBuilder();
+		String[]modifiers = CILModifierBuilder.ModifierBuilder(sootMethod.getModifiers());
+		SootClass superClass = sootMethod.getDeclaringClass().getSuperclass();
+		Chain<SootClass> interfaces = sootMethod.getDeclaringClass().getInterfaces();
+		String methodName = "";
 		
 		
-		if(sootMethod.isConstructor()) {
-			String modifier = "";
+		sb.append(".method ");
+		sb.append(modifiers[CILModifiers.C_ACCESS]);
+	
+		if (sootMethod.getDeclaringClass().isInterface()) {
+			methodName = sootMethod.getName();
+			sb.append(" hidebysig ");
+			sb.append("newslot abstract virtual instance ");
+		} else if (sootMethod.isConstructor()) {
+			sb.append(" hidebysig ");
+			methodName = ".ctor";
+			sb.append("specialname rtspecialname instance ");
 			
-			if (sootMethod.isPrivate()) {
-				modifier = PRIVATE;
-			} else if (sootMethod.isProtected()) {
-				modifier = PROTECTED;
-			} else if (sootMethod.isPublic()) {
-				modifier = PUBLIC;
-			}
-			
-			
-			
-			sb.append(cilMethodHeader);
-			sb.append(" ");
-			sb.append(modifier);
-			sb.append(" ");
-			sb.append("hidebysig specialname rtspecialname instance");
-			sb.append(" ");
-			sb.append(returnType);
-			sb.append(" .ctor(");
-			sb.append(params);
-			sb.append(")");
-			sb.append(" cil managed {");
+		} else if (sootMethod.isStaticInitializer()) {
+			sb.append("public hidebysig ");
+			methodName = ".cctor";
+			sb.append("specialname rtspecialname static ");
+
 		} else {
-			String firstModifier = "";
-			String secondModifier = "instance";
-			if (sootMethod.isPrivate()) {
-				firstModifier = PRIVATE;
-				if (sootMethod.isStatic()) {
-					secondModifier = STATIC;
+			methodName = sootMethod.getName();
+			if (isOverrideMethod(sootMethod, sootMethod.getDeclaringClass().getInterfaces(), superClass, interfaces)) {
+				sb.append(" hidebysig newslot ");
+				sb.append("virtual final instance ");
+			} else {
+				
+				if (sootMethod.isAbstract()) {
+					sb.append(" hidebysig newslot ");
+					sb.append(modifiers[CILModifiers.C_ABSTRACT]);
+					sb.append(" virtual ");
+				} else {
+					sb.append(" hidebysig ");
 				}
-			} else if (sootMethod.isProtected()) {
-				firstModifier = PROTECTED;
-				if (sootMethod.isStatic()) {
-					secondModifier = STATIC;
-				}
-			} else if (sootMethod.isPublic()) {
-				firstModifier = PUBLIC;
-				if (sootMethod.isStatic()) {
-					secondModifier = STATIC;
-				}
+				
+				sb.append(modifiers[CILModifiers.C_STATICORINSTANCE]);
+				sb.append(" ");
 			}
-			
-			sb.append(cilMethodHeader);
-			sb.append(" ");
-			sb.append(firstModifier);
-			sb.append(" ");
-			sb.append("hidebysig");
-			sb.append(" ");
-			sb.append(secondModifier);
-			sb.append(" ");
-			sb.append(returnType);
-			sb.append(" ");
-			sb.append(sootMethod.getName());
-			sb.append("(");
-			sb.append(params);
-			sb.append(")");
-			sb.append(" cil managed {");
 		}
+		
+		
+		
+		sb.append(returnType);
+		sb.append(" ");
+		sb.append(methodName);
+		sb.append("(");
+		sb.append(params);
+		sb.append(") cil managed {");
+		
+		
+		
 
 		return sb.toString();
+	}
+	
+	private static boolean isOverrideMethod(SootMethod askedMethod, Chain<SootClass> allInterfaces, SootClass superClass, Chain<SootClass> interfaces) {
+		
+		List<SootMethod> allMethods = superClass.getMethods();
+		
+		
+		for(SootMethod m: allMethods) {
+			if (superClass.isAbstract() && askedMethod.getSubSignature().equals(m.getSubSignature())) {
+				return true;
+			}
+		}
+		
+		for(SootClass i: allInterfaces) {
+			allMethods = i.getMethods();
+			
+			for(SootMethod interfaceMethod: allMethods) {
+				String subsignatureInterface = interfaceMethod.getSubSignature();
+				String subsignatureAskedMethod = askedMethod.getSubSignature();
+				
+				if (subsignatureAskedMethod.equals(subsignatureInterface)) {
+					return true;
+				}
+			}
+			
+		}
+		
+		
+		return false;
 	}
 	
 	public static String getParamsInString(ArrayList<Parameter> allParameters) {

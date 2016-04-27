@@ -45,6 +45,7 @@ public class CILClassBuilder {
 			sb.append(" ");
 			sb.append(modifiers[CILModifiers.C_ABSTRACT]);
 			sb.append(" auto ansi ");
+			sb.append(modifiers[CILModifiers.C_FINAL]);
 			sb.append(finalOrNot);
 			sb.append(" beforefieldinit ");
 			sb.append(className);

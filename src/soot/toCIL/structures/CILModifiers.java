@@ -6,6 +6,7 @@ public class CILModifiers {
 	 * Modifiers: Format: Jimplename = CILName as a Value
 	 */
 	
+	public static final String INTERFACE = "interface";
 	public static final String ABSTRACT = "abstract";
 	public static final String PRIVATE = "private";
 	public static final String PUBLIC = "public";
@@ -30,6 +31,7 @@ public class CILModifiers {
 	public static final int C_NATIVE = 6;
 	public static final int C_STRICTFP = 7;
 	public static final int C_FINAL = 8;
+	public static final int C_INTERFACE = 9;
 	
 
 }

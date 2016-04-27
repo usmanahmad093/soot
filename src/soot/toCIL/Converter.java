@@ -72,7 +72,6 @@ public class Converter {
 		} else if(askedType instanceof soot.ShortType) {
 			return INT16;
 		} else if (askedType instanceof soot.ArrayType) {
-			// TODO: arrayTypes überprüfen
 			return "string[]";
 		}
 

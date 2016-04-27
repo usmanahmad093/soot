@@ -12,7 +12,7 @@ public class CILModifierBuilder {
 
 	
 	public static String[] ModifierBuilder(int flags) {
-		final int max = 9;
+		final int max = 10;
 		
 		String[] modifiers = new String[max];
 		
@@ -60,6 +60,10 @@ public class CILModifierBuilder {
 		
 		if ((flags & Modifier.STRICTFP) == Modifier.STRICTFP) {
 			modifiers[CILModifiers.C_STRICTFP] = CILModifiers.STRICTFP;
+		}
+		
+		if ((flags & Modifier.INTERFACE) == Modifier.INTERFACE) {
+			modifiers[CILModifiers.C_INTERFACE] = CILModifiers.INTERFACE;
 		}
 		
 		

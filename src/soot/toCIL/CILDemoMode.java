@@ -65,7 +65,8 @@ public class CILDemoMode {
 	int hashmapSize = 0;
 	public static final String STRANGE_TYPE = "byte";
 
-	int test; 
+	int test;
+
 	private CILDemoMode() {
 	}
 
@@ -112,8 +113,11 @@ public class CILDemoMode {
 				System.out.println(entrypointInstr.getInstruction());
 			}
 
-			sbForTextFile.append(".maxstack " + m.getMaxStack() + "\n");
-			System.out.println(".maxstack " + m.getMaxStack());
+			if (m.getMaxStack() != 0) {
+				sbForTextFile.append(".maxstack " + m.getMaxStack() + "\n");
+				System.out.println(".maxstack " + m.getMaxStack());
+
+			}
 			for (Instruction instr : allInstructions) {
 
 				sbForTextFile.append(instr.getLabel() + instr.getInstruction() + "\n");
@@ -186,11 +190,11 @@ public class CILDemoMode {
 		for (SootMethod method : clazz.getMethods()) {
 
 			soot.toCIL.structures.Method cilMethod;
-			
-			//TODO: staticinitializer
-			//if (method.isStaticInitializer()) {
 
-			//}
+			// TODO: staticinitializer
+			// if (method.isStaticInitializer()) {
+
+			// }
 
 			cilMethod = new soot.toCIL.structures.Method(method, refClass);
 			String cilMethodHeader = CILMethodBuilder.buildCILMethodHeader(method, cilMethod.getAllParameters());
@@ -203,8 +207,6 @@ public class CILDemoMode {
 
 				addVariables(allLocals, cilMethod);
 				addParams(allTypes, cilMethod);
-
-				
 
 				transformAndAddInstructions(body.getUnits(), cilMethod);
 				detectMaxStack(cilMethod);

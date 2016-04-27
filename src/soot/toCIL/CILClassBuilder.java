@@ -1,60 +1,26 @@
 package soot.toCIL;
 
+import java.util.ArrayList;
+
+import soot.Modifier;
 import soot.SootClass;
 import soot.SootField;
+import soot.toCIL.structures.CILModifiers;
+import soot.util.Chain;
 
 public class CILClassBuilder {
-	private static final String PRIVATE = "private";
-	private static final String PUBLIC = "public";
-	private static final String PROTECTED = "family";
-	private static final String FINAL = "initonly";
-	private static final String STATIC = "static";
 	private static final String OBJECT_CLASS = "[mscorlib]System.Object";
 
 	public static String buildCILClass(SootClass sootClass) {
-
-		String cilClass = ".class ";
-
-		if (sootClass.isInnerClass()) {
-			if (sootClass.isPrivate()) {
-				cilClass += PRIVATE;
-
-				if (sootClass.isStatic()) {
-					cilClass += " " + STATIC;
-
-					if (sootClass.isFinal()) {
-						cilClass += " " + FINAL;
-					}
-				}
-
-			} else if (sootClass.isProtected()) {
-				cilClass += PROTECTED;
-				if (sootClass.isStatic()) {
-					cilClass += " " + STATIC;
-
-					if (sootClass.isFinal()) {
-						cilClass += " " + FINAL;
-					}
-				}
-
-			} else if (sootClass.isPublic()) {
-				cilClass += PUBLIC;
-				if (sootClass.isStatic()) {
-					cilClass += " " + STATIC;
-
-					if (sootClass.isFinal()) {
-						cilClass += " " + FINAL;
-					}
-				}
-
-			}
-
-		} else {
-			if (sootClass.isPublic()) {
-				cilClass += " " + PUBLIC;
-			}
-		}
-
+		StringBuilder sb = new StringBuilder();
+		String[] modifiers = CILModifierBuilder.ModifierBuilder(sootClass.getModifiers());
+		sb.append(".class ");
+		String finalOrNot = "";
+		boolean firstValue = true;
+		boolean lastValue = false;
+		int interfaceIndex = 0;
+		
+		Chain<SootClass> interfaces = sootClass.getInterfaces();
 		String className = sootClass.getName();
 		String superClass;
 		if (sootClass.hasSuperclass())
@@ -62,19 +28,48 @@ public class CILClassBuilder {
 					: sootClass.getSuperclass().getName());
 		else
 			superClass = OBJECT_CLASS;
-
-		StringBuilder sb = new StringBuilder();
-		sb.append(cilClass);
-		sb.append(" auto ansi beforefieldinit");
-		sb.append(" ");
-		sb.append(className);
-		sb.append(" extends");
-		sb.append(" ");
-		sb.append(superClass);
-		sb.append(" ");
-		sb.append("{");
+		
+		if (sootClass.isFinal()) {
+			finalOrNot = CILModifiers.CLASS_FINAL;
+		}
+		
+		if (sootClass.isInterface()) {
+			sb.append("interface ");
+			sb.append(modifiers[CILModifiers.C_ACCESS]);
+			sb.append(" abstract auto ansi ");
+			sb.append(className);
+			sb.append(" ");
+		} else {
+			
+			sb.append(modifiers[CILModifiers.C_ACCESS]);
+			sb.append(" ");
+			sb.append(modifiers[CILModifiers.C_ABSTRACT]);
+			sb.append(" auto ansi ");
+			sb.append(finalOrNot);
+			sb.append(" beforefieldinit ");
+			sb.append(className);
+			sb.append(" extends ");
+			sb.append(superClass);
+			sb.append(" ");
+			
+		}
+		
+		for(SootClass i: interfaces) {
+			String comma = (interfaceIndex == (interfaces.size()  - 1))? "":", ";
+			String printImplements = (firstValue)?"implements ":"";
+			sb.append(printImplements);
+			sb.append(i.getName());
+			sb.append(comma);
+			
+			firstValue = false;
+			interfaceIndex++;
+		}
+		
+		
+		sb.append(" {");
+		
+		
 
 		return sb.toString();
 	}
-
 }

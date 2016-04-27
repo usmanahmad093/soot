@@ -71,11 +71,13 @@ public class CILDemoMode {
 
 	public void showJimpleBody(SootClass clazz) {
 
-		System.out.println(clazz.getName() + ": ");
+		System.out.println("Class: " + clazz.getName() + " Superclass: " + clazz.getSuperclass());
 		for (SootMethod method : clazz.getMethods()) {
 			if (method.isConcrete()) {
 				Body b = method.retrieveActiveBody();
 				System.out.println(b.toString());
+			} else {
+				System.out.println(method.getSignature() + " " + method.getName() + " ();");
 			}
 		}
 

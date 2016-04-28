@@ -19,7 +19,7 @@
 	<classpathentry kind="lib" path="libs/asm-debug-all-5.0.3.jar"/>
 	<classpathentry kind="lib" path="libs/dexlib2-2.1.2-87d10dac.jar" sourcepath="D:/Arbeit/smali/dexlib2/src/main/java"/>
 	<classpathentry kind="lib" path="libs/util-2.1.2-87d10dac.jar" sourcepath="D:/Arbeit/smali/util/src/main/java"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/heros-develop"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/jasmin-develop"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/heros"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jasmin"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

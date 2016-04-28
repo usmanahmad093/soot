@@ -12,22 +12,19 @@ import soot.toCIL.structures.Variable;
 import soot.util.Chain;
 
 public class CILMethodBuilder {
-	
 
-	
 	public static String buildCILMethodHeader(SootMethod sootMethod, ArrayList<Parameter> allParameters) {
 		String returnType = Converter.getInstance().getTypeInString(sootMethod.getReturnType());
 		String params = getParamsInString(allParameters);
 		StringBuilder sb = new StringBuilder();
-		String[]modifiers = CILModifierBuilder.ModifierBuilder(sootMethod.getModifiers());
+		String[] modifiers = CILModifierBuilder.ModifierBuilder(sootMethod.getModifiers());
 		SootClass superClass = sootMethod.getDeclaringClass().getSuperclass();
 		Chain<SootClass> interfaces = sootMethod.getDeclaringClass().getInterfaces();
 		String methodName = "";
-		
-		
+
 		sb.append(".method ");
 		sb.append(modifiers[CILModifiers.C_ACCESS]);
-	
+
 		if (sootMethod.getDeclaringClass().isInterface()) {
 			methodName = sootMethod.getName();
 			sb.append(" hidebysig ");
@@ -36,7 +33,7 @@ public class CILMethodBuilder {
 			sb.append(" hidebysig ");
 			methodName = ".ctor";
 			sb.append("specialname rtspecialname instance ");
-			
+
 		} else if (sootMethod.isStaticInitializer()) {
 			sb.append("public hidebysig ");
 			methodName = ".cctor";
@@ -44,11 +41,12 @@ public class CILMethodBuilder {
 
 		} else {
 			methodName = sootMethod.getName();
-			if (isOverrideMethod(sootMethod, sootMethod.getDeclaringClass().getInterfaces(), superClass, interfaces)) {
-				sb.append(" hidebysig newslot ");
-				sb.append("virtual final instance ");
+			if (isVirtualMethod(sootMethod, superClass)) {
+				sb.append(" hidebysig virtual final instance ");
+			} else if (checkInterfaceMethod(sootMethod, interfaces)) {
+				sb.append(" hidebysig newslot virtual final instance ");
 			} else {
-				
+
 				if (sootMethod.isAbstract()) {
 					sb.append(" hidebysig newslot ");
 					sb.append(modifiers[CILModifiers.C_ABSTRACT]);
@@ -56,56 +54,61 @@ public class CILMethodBuilder {
 				} else {
 					sb.append(" hidebysig ");
 				}
-				
+
 				sb.append(modifiers[CILModifiers.C_STATICORINSTANCE]);
 				sb.append(" ");
 			}
 		}
-		
-		
-		
+
 		sb.append(returnType);
 		sb.append(" ");
 		sb.append(methodName);
 		sb.append("(");
 		sb.append(params);
 		sb.append(") cil managed {");
-		
-		
-		
 
 		return sb.toString();
 	}
-	
-	private static boolean isOverrideMethod(SootMethod askedMethod, Chain<SootClass> allInterfaces, SootClass superClass, Chain<SootClass> interfaces) {
-		
+
+	private static boolean isVirtualMethod(SootMethod askedMethod, SootClass superClass) {
+
 		List<SootMethod> allMethods = superClass.getMethods();
-		
-		
-		for(SootMethod m: allMethods) {
+
+		for (SootMethod m : allMethods) {
 			if (superClass.isAbstract() && askedMethod.getSubSignature().equals(m.getSubSignature())) {
 				return true;
 			}
 		}
-		
-		for(SootClass i: allInterfaces) {
-			allMethods = i.getMethods();
-			
-			for(SootMethod interfaceMethod: allMethods) {
+
+		return false;
+	}
+
+	private static boolean checkInterfaceMethod(SootMethod askedMethod, Chain<SootClass> allInterfaces) {
+		boolean methodAvailable = false;
+
+		for (SootClass i : allInterfaces) {
+			List<SootMethod>allMethods = i.getMethods();
+
+			for (SootMethod interfaceMethod : allMethods) {
 				String subsignatureInterface = interfaceMethod.getSubSignature();
 				String subsignatureAskedMethod = askedMethod.getSubSignature();
-				
+
 				if (subsignatureAskedMethod.equals(subsignatureInterface)) {
 					return true;
 				}
 			}
-			
+			Chain<SootClass> superInterfaceClasses = i.getInterfaces();
+			if (superInterfaceClasses != null) {
+				if (checkInterfaceMethod(askedMethod, superInterfaceClasses) == true) {
+					return true;
+				}
+			}
+
 		}
-		
-		
+
 		return false;
 	}
-	
+
 	public static String getParamsInString(ArrayList<Parameter> allParameters) {
 		String params = "";
 		boolean firstParam = true;
@@ -118,7 +121,7 @@ public class CILMethodBuilder {
 
 			firstParam = false;
 		}
-		
+
 		return params;
 	}
 

@@ -55,6 +55,7 @@ import soot.jimple.RetStmt;
 import soot.jimple.ReturnStmt;
 import soot.jimple.ReturnVoidStmt;
 import soot.jimple.SpecialInvokeExpr;
+import soot.jimple.StaticFieldRef;
 import soot.jimple.StaticInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.StmtSwitch;
@@ -68,6 +69,7 @@ import soot.toCIL.instructions.Brtrue;
 import soot.toCIL.instructions.Instruction;
 import soot.toCIL.instructions.Ldarg;
 import soot.toCIL.instructions.Ldfld;
+import soot.toCIL.instructions.Ldsfld;
 import soot.toCIL.instructions.LoadInstruction;
 import soot.toCIL.instructions.LocalsInit;
 import soot.toCIL.instructions.Newobj;
@@ -75,6 +77,8 @@ import soot.toCIL.instructions.Pop;
 import soot.toCIL.instructions.Ret;
 import soot.toCIL.instructions.Stfld;
 import soot.toCIL.instructions.StoreInstruction;
+import soot.toCIL.instructions.Stsfld;
+import soot.toCIL.structures.CILModifiers;
 import soot.toCIL.structures.Class;
 import soot.toCIL.structures.Label;
 import soot.toCIL.structures.LocalVariables;
@@ -159,10 +163,26 @@ public class StmtVisitor implements StmtSwitch {
 		SootField field = ((InstanceFieldRef) v).getField();
 		String className = field.getDeclaringClass().getName();
 		String attributeName = field.getName();
+		
+		returnType = (CILModifierBuilder.isVolatile(field.getModifiers())? (CILModifiers.VOLATILE + returnType): returnType);
 
 		stfld = new Stfld(stmt, returnType, className, attributeName);
 
 		return stfld;
+	}
+	
+	private Stsfld buildStsfldInstruction(Value v, Stmt stmt) {
+		Stsfld stsfld = null;
+		String returnType = Converter.getInstance().getTypeInString(v.getType());
+		SootField field = ((StaticFieldRef) v).getField();
+		String className = field.getDeclaringClass().getName();
+		String attributeName = field.getName();
+		
+		returnType = (CILModifierBuilder.isVolatile(field.getModifiers())? (CILModifiers.VOLATILE + returnType): returnType);
+
+		stsfld = new Stsfld(stmt, returnType, className, attributeName);
+
+		return stsfld;
 	}
 
 	private Ldfld buildLdfldInstruction(Value v, Stmt stmt) {
@@ -171,10 +191,26 @@ public class StmtVisitor implements StmtSwitch {
 		String returnType = Converter.getInstance().getTypeInString(v.getType());
 		String className = field.getDeclaringClass().getName();
 		String attributeName = field.getName();
+		
+		returnType = (CILModifierBuilder.isVolatile(field.getModifiers())? (CILModifiers.VOLATILE + returnType): returnType);
 
 		ldfld = new Ldfld(stmt, returnType, className, attributeName);
 
 		return ldfld;
+	}
+	
+	private Ldsfld buildLdsfldInstruction(Value v, Stmt stmt) {
+		Ldsfld ldsfld = null;
+		SootField field = ((StaticFieldRef) v).getField();
+		String returnType = Converter.getInstance().getTypeInString(v.getType());
+		String className = field.getDeclaringClass().getName();
+		String attributeName = field.getName();
+		
+		returnType = (CILModifierBuilder.isVolatile(field.getModifiers())? (CILModifiers.VOLATILE + returnType): returnType);
+
+		ldsfld = new Ldsfld(stmt, returnType, className, attributeName);
+
+		return ldsfld;
 	}
 
 	public void buildInstruction(Instruction instruction) {
@@ -196,80 +232,58 @@ public class StmtVisitor implements StmtSwitch {
 		Value rhs = stmt.getRightOp();
 
 		if (!(rhs instanceof NewExpr)) {
-			if (lhs instanceof Local) {
-
-				if (rhs instanceof Local || rhs instanceof Constant) {
-					buildInstruction(BuildLoadInstruction(rhs, stmt));
-				} else if (rhs instanceof InstanceFieldRef) {
-					Instruction instr = null;
-					
-					if(m.isStatic()) {
-						Value base = ((InstanceFieldRef)rhs).getBase();
-						instr = BuildLoadInstruction(base, stmt);
-					} else {
-						instr = new Ldarg(0, stmt);
-					}
-					Ldfld ldfldInstr = buildLdfldInstruction(rhs, stmt);
-					buildInstruction(instr);
-					buildInstruction(ldfldInstr);
-				} else if (rhs instanceof InvokeExpr) {
-					InvokeExpr invokeExpr = (InvokeExpr) rhs;
-
-					if (JimpleCodeDetector.getInstance().checkStaticInvokeExpr(invokeExpr)) {
-						Value value = invokeExpr.getArg(0);
-						buildInstruction(BuildLoadInstruction(value, stmt));
-					} else if (JimpleCodeDetector.getInstance().checkVirtualInvokeExpr(invokeExpr)) {
-						VirtualInvokeExpr virtualInvokeExpr = (VirtualInvokeExpr) invokeExpr;
-						Value value = virtualInvokeExpr.getBase();
-						buildInstruction(BuildLoadInstruction(value, stmt));
-					} else {
-						rhs.apply(exprV);
-					}
-
-				} else {
-					rhs.apply(exprV);
-				}
-
+			if (lhs instanceof Local || lhs instanceof Constant) {
+				buildRightSide(rhs, stmt);
+				
 				try {
 					buildInstruction(BuildStoreInstruction(lhs, stmt));
 				} catch (ClassNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
 			} else if (lhs instanceof InstanceFieldRef) {
-
-				if (rhs instanceof Local || rhs instanceof Constant) {
-					Instruction instruction = null;
-					
-					if(m.isStatic()) {
-						Value base = ((InstanceFieldRef) lhs).getBase();
-						instruction = BuildLoadInstruction(base, stmt);
-					} else {
-						instruction  = new Ldarg(0, stmt);
-					}
-					
-	
-					buildInstruction(instruction);
-					buildInstruction(BuildLoadInstruction(rhs, stmt));
-				} else if (rhs instanceof InstanceFieldRef) {
-					
-					Ldarg ldargInstr = new Ldarg(0, stmt);
-					Ldarg ldargInstr2 = new Ldarg(0, stmt);
-					Ldfld ldfldInstr = buildLdfldInstruction(rhs, stmt);
-
-					buildInstruction(ldargInstr);
-					buildInstruction(ldargInstr2);
-					buildInstruction(ldfldInstr);
-				} else {
-					rhs.apply(exprV);
-				}
-
-				Stfld stfldInstr = buildStfldInstruction(lhs, stmt);
-				buildInstruction(stfldInstr);
+				Value baseValue = ((InstanceFieldRef) lhs).getBase();
+				buildInstruction(BuildLoadInstruction(baseValue, stmt));
+				buildRightSide(rhs, stmt);
+				buildInstruction(buildStfldInstruction(lhs, stmt));
+			} else if (lhs instanceof StaticFieldRef) {
+				buildRightSide(rhs, stmt);
+				buildInstruction(buildStsfldInstruction(lhs, stmt));
 			}
+		} else {
+			Value leftValue = stmt.getLeftOp();
+			
+			LocalVariables localVariable = m.getLocalVariableByValue((Local)leftValue);
+			localVariable.notAssignedByThisRef();
+			m.InsertEditedLocalVariable(localVariable);
 		}
 
+	}
+	
+	
+	public void buildRightSide(Value rhs, AssignStmt stmt) {
+		if (rhs instanceof Local || rhs instanceof Constant) {
+			buildInstruction(BuildLoadInstruction(rhs, stmt));
+		} else if (rhs instanceof InvokeExpr) {
+			InvokeExpr invokeExpr = (InvokeExpr) rhs;
+
+			if (JimpleCodeDetector.getInstance().checkStaticInvokeExpr(invokeExpr)) {
+				Value value = invokeExpr.getArg(0);
+				buildInstruction(BuildLoadInstruction(value, stmt));
+			} else if (JimpleCodeDetector.getInstance().checkVirtualInvokeExpr(invokeExpr)) {
+				VirtualInvokeExpr virtualInvokeExpr = (VirtualInvokeExpr) invokeExpr;
+				Value value = virtualInvokeExpr.getBase();
+				buildInstruction(BuildLoadInstruction(value, stmt));
+			}
+		} else if (rhs instanceof InstanceFieldRef) {
+			Value baseValue = ((InstanceFieldRef) rhs).getBase();
+			buildInstruction(BuildLoadInstruction(baseValue, stmt));
+			buildInstruction(buildLdfldInstruction(rhs, stmt));
+		} else if (rhs instanceof StaticFieldRef) {
+			buildInstruction(buildLdsfldInstruction(rhs, stmt));
+		} else {
+			rhs.apply(exprV);
+		}
 	}
 
 	@Override
@@ -281,35 +295,17 @@ public class StmtVisitor implements StmtSwitch {
 
 		if (rhs instanceof ThisRef) {
 			ldargInstruction = new Ldarg(0, stmt);
-			isThisRefAvailable = true;
-
-			LocalVariables otherVariable = new LocalVariables(lhs.getName(),
-					Converter.getInstance().getTypeInString(lhs.getType()), false);
-			Variable var = m.searchforVariableAndGetIt(otherVariable);
-
-			if (var != null) {
-				ArrayList<LocalVariables> allVariables = m.getAllVariables();
-				allVariables.remove(var);
-				m.setVariables(allVariables);
-				LocalsInit localsinitInstr = (m.getInstructions().get(0) instanceof LocalsInit)
-						? (LocalsInit) m.getInstructions().get(0) : new LocalsInit(null);
-
-				if (localsinitInstr.getLocalVariables().size() == 0) {
-					allInstructions.remove(localsinitInstr);
-				}
-			}
-
 		} else if (rhs instanceof ParameterRef) {
 			ldargInstruction = BuildLdargInstruction(rhs, stmt);
-
-			try {
-				storeInstr = BuildStoreInstruction(lhs, stmt);
-				buildInstruction(ldargInstruction);
-				buildInstruction(storeInstr);
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		}
+		
+		try {
+			storeInstr = BuildStoreInstruction(lhs, stmt);
+			buildInstruction(ldargInstruction);
+			buildInstruction(storeInstr);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

@@ -49,6 +49,7 @@ import soot.toCIL.instructions.ShrUn;
 import soot.toCIL.instructions.StoreInstruction;
 import soot.toCIL.instructions.Sub;
 import soot.toCIL.instructions.Xor;
+import soot.toCIL.structures.CILModifiers;
 import soot.toCIL.structures.Class;
 import soot.toCIL.structures.LocalVariables;
 import soot.toCIL.structures.Member;
@@ -179,6 +180,8 @@ public class CILDemoMode {
 			String fieldName = sootField.getName();
 			String type = Converter.getInstance().getTypeInString(sootField.getType());
 
+			type = (CILModifierBuilder.isVolatile(sootField.getModifiers())? (CILModifiers.VOLATILE + type): type);
+			
 			Member member = new Member(cilFieldRepresenation, fieldName, type, false, false);
 			allMembers.add(member);
 		}

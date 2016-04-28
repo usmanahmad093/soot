@@ -2,6 +2,7 @@ package soot.toCIL;
 
 import soot.SootField;
 import soot.SootMethod;
+import soot.toCIL.structures.CILModifiers;
 
 public class CILFieldBuilder {
 	private static final String PRIVATE = "private";
@@ -12,46 +13,25 @@ public class CILFieldBuilder {
 
 	
 	public static String buildCILField(SootField sootField) {
-		String cilField = ".field ";
-
-		if (sootField.isPrivate()) {
-			cilField += PRIVATE;
-
-			if (sootField.isStatic()) {
-				cilField += " " + STATIC;
-
-				if (sootField.isFinal()) {
-					cilField += " " + FINAL;
-				}
-			}
-
-		} else if (sootField.isProtected()) {
-			cilField += PROTECTED;
-			if (sootField.isStatic()) {
-				cilField += " " + STATIC;
-
-				if (sootField.isFinal()) {
-					cilField += " " + FINAL;
-				}
-			}
-
-		} else if (sootField.isPublic()) {
-			cilField += PUBLIC;
-			if (sootField.isStatic()) {
-				cilField += " " + STATIC;
-
-				if (sootField.isFinal()) {
-					cilField += " " + FINAL;
-				}
-			}
-
-		}
-		
+		StringBuilder sb =  new StringBuilder();
+		String[] modifiers = CILModifierBuilder.ModifierBuilder(sootField.getModifiers());
 		String fieldName = sootField.getName();
 		String type = Converter.getInstance().getTypeInString(sootField.getType());
-		cilField += " " + type + " " + fieldName;
-
-		return cilField;
+		
+		sb.append(".field ");
+		sb.append(modifiers[CILModifiers.C_ACCESS]);
+		sb.append(" ");
+		sb.append(modifiers[CILModifiers.C_STATICORINSTANCE]);
+		sb.append(" ");
+		sb.append(modifiers[CILModifiers.C_FINAL]);
+		sb.append(" ");
+		sb.append(modifiers[CILModifiers.C_VOLATILE]);
+		sb.append(" ");
+		sb.append(type);
+		sb.append(" ");
+		sb.append(fieldName);
+		
+		return sb.toString();
 	}
 
 }

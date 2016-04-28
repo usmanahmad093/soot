@@ -38,6 +38,7 @@ import soot.Type;
 import soot.Value;
 import soot.jimple.AddExpr;
 import soot.jimple.AndExpr;
+import soot.jimple.AssignStmt;
 import soot.jimple.CastExpr;
 import soot.jimple.CmpExpr;
 import soot.jimple.CmpgExpr;
@@ -101,6 +102,7 @@ import soot.toCIL.instructions.jumps.Ble;
 import soot.toCIL.instructions.jumps.Blt;
 import soot.toCIL.instructions.jumps.Bne;
 import soot.toCIL.structures.Label;
+import soot.toCIL.structures.LocalVariables;
 import soot.toCIL.structures.Method;
 import soot.toCIL.structures.Parameter;
 
@@ -170,12 +172,10 @@ public class ExprVisitor implements ExprSwitch {
 		stmtV.buildInstruction(loadInstr1);
 		stmtV.buildInstruction(loadInstr2);
 		stmtV.buildInstruction(andInstruction);
-		
-	
+
 	}
 
-	
-	//TODO: Bsp java code: 	boolean var = (a >b) System.out.println(var);
+	// TODO: Bsp java code: boolean var = (a >b) System.out.println(var);
 
 	@Override
 	public void caseCmpExpr(CmpExpr v) {
@@ -220,14 +220,14 @@ public class ExprVisitor implements ExprSwitch {
 
 		LoadInstruction loadInstr1 = stmtV.BuildLoadInstruction(operand1, originStmt);
 		LoadInstruction loadInstr2 = stmtV.BuildLoadInstruction(operand2, originStmt);
-		
+
 		Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel(target);
 		Beq beqInstruction = new Beq(targetLabel, originStmt);
 
 		stmtV.buildInstruction(loadInstr1);
 		stmtV.buildInstruction(loadInstr2);
 		stmtV.buildInstruction(beqInstruction);
-		
+
 	}
 
 	@Override
@@ -240,7 +240,7 @@ public class ExprVisitor implements ExprSwitch {
 
 		LoadInstruction loadInstr1 = stmtV.BuildLoadInstruction(operand1, originStmt);
 		LoadInstruction loadInstr2 = stmtV.BuildLoadInstruction(operand2, originStmt);
-		
+
 		Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel(target);
 		Bne bneInstruction = new Bne(targetLabel, originStmt);
 
@@ -256,7 +256,7 @@ public class ExprVisitor implements ExprSwitch {
 
 		LoadInstruction loadInstr1 = stmtV.BuildLoadInstruction(operand1, originStmt);
 		LoadInstruction loadInstr2 = stmtV.BuildLoadInstruction(operand2, originStmt);
-		
+
 		Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel(target);
 		Bge bgeInstruction = new Bge(targetLabel, originStmt);
 
@@ -274,7 +274,7 @@ public class ExprVisitor implements ExprSwitch {
 
 		LoadInstruction loadInstr1 = stmtV.BuildLoadInstruction(operand1, originStmt);
 		LoadInstruction loadInstr2 = stmtV.BuildLoadInstruction(operand2, originStmt);
-		
+
 		Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel(target);
 		Bgt bgtInstruction = new Bgt(targetLabel, originStmt);
 
@@ -290,7 +290,7 @@ public class ExprVisitor implements ExprSwitch {
 
 		LoadInstruction loadInstr1 = stmtV.BuildLoadInstruction(operand1, originStmt);
 		LoadInstruction loadInstr2 = stmtV.BuildLoadInstruction(operand2, originStmt);
-		
+
 		Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel(target);
 		Ble bleInstruction = new Ble(targetLabel, originStmt);
 
@@ -309,7 +309,7 @@ public class ExprVisitor implements ExprSwitch {
 
 		LoadInstruction loadInstruction1 = stmtV.BuildLoadInstruction(operand1, originStmt);
 		LoadInstruction loadInstruction2 = stmtV.BuildLoadInstruction(operand2, originStmt);
-		
+
 		Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel(target);
 		Blt bltInstruction = new Blt(targetLabel, originStmt);
 
@@ -458,7 +458,7 @@ public class ExprVisitor implements ExprSwitch {
 
 	@Override
 	public void caseInterfaceInvokeExpr(InterfaceInvokeExpr v) {
-		
+
 		InvokeExpr invokeExpr = (InvokeExpr) v;
 
 		String methodName = v.getMethod().getName();
@@ -500,45 +500,38 @@ public class ExprVisitor implements ExprSwitch {
 			allArgumentTypes.add(Converter.getInstance().getTypeInString(value.getType()));
 		}
 
-	
-		//if (!m.isConstructor()) {
-		
-		String superClassName = m.getClass().getSuperclass().getName();
-		String currentClassName = v.getMethod().getDeclaringClass().getName();
-		if (m.isConstructor() && currentClassName.equals(superClassName)) {
+		// if (!m.isConstructor()) {
+
+		LocalVariables localVariable = m.getLocalVariableByValue((Local) leftValue);
+
+		if (localVariable.assignedByThisRef()) {
 			String className = v.getMethod().getDeclaringClass().getName();
 			className = (className.equals(Object.class.getName())) ? "[mscorlib]System.Object" : className;
 			Ldarg ldargInstruction = new Ldarg(0, originStmt);
 			Callctor callInstruction = new Callctor(returnType, className, originStmt, allArgumentTypes);
-			
+
 			stmtV.buildInstruction(ldargInstruction);
 			stmtV.buildInstruction(callInstruction);
-			
 
-		}
-		// TODO:Überarbeiten
-		else {
+		} else {
 			String className = v.getMethod().getDeclaringClass().getName();
 			className = (className.equals(Object.class.getName())) ? "[mscorlib]System.Object" : className;
 
-		
-			
 			Newobj newobjInstruction = new Newobj(returnType, className, allArgumentTypes, originStmt);
 
 			stmtV.buildInstruction(newobjInstruction);
-		
+
+			soot.toCIL.instructions.StoreInstruction storeInstr = null;
+			try {
+				storeInstr = stmtV.BuildStoreInstruction(leftValue, originStmt);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			stmtV.buildInstruction(storeInstr);
 
 		}
-		
-		soot.toCIL.instructions.StoreInstruction storeInstr = null;
-		try {
-			storeInstr = stmtV.BuildStoreInstruction(leftValue, originStmt);
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		stmtV.buildInstruction(storeInstr);
 
 	}
 
@@ -571,7 +564,6 @@ public class ExprVisitor implements ExprSwitch {
 
 	@Override
 	public void caseVirtualInvokeExpr(VirtualInvokeExpr v) {
-		InvokeExpr invokeExpr = (InvokeExpr) v;
 		Value leftValue = v.getBase();
 
 		String methodName = v.getMethod().getName();

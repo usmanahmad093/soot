@@ -38,9 +38,12 @@ public class CILModifierBuilder {
 		
 		if ((flags & Modifier.STATIC) == Modifier.STATIC) {
 			modifiers[CILModifiers.C_STATICORINSTANCE] = CILModifiers.STATIC;
-		}  else {
+		} 
+		/*
+		else {
 			modifiers[CILModifiers.C_STATICORINSTANCE] = CILModifiers.INSTANCE;
 		}
+		*/
 		
 		if ((flags & Modifier.VOLATILE) == Modifier.VOLATILE) {
 			modifiers[CILModifiers.C_VOLATILE] = CILModifiers.VOLATILE;

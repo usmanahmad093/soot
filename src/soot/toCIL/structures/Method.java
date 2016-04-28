@@ -10,6 +10,7 @@ import soot.PatchingChain;
 import soot.SootMethod;
 import soot.Type;
 import soot.Unit;
+import soot.Value;
 import soot.toCIL.Converter;
 import soot.toCIL.LabelAssigner;
 import soot.toCIL.StmtVisitor;
@@ -45,17 +46,17 @@ public class Method implements Body {
 	public boolean isConstructor() {
 		return sootMethod.isConstructor();
 	}
-	
+
 	public boolean isMain() {
-		return (sootMethod.isMain())? true: false;
+		return (sootMethod.isMain()) ? true : false;
 	}
-	
+
 	public boolean isStatic() {
 		return sootMethod.isStatic();
 	}
-	
+
 	public boolean isVoid() {
-		return (sootMethod.getReturnType() instanceof soot.VoidType) ? true:false;
+		return (sootMethod.getReturnType() instanceof soot.VoidType) ? true : false;
 	}
 
 	public void setMaxStack(int maxStack) {
@@ -81,7 +82,6 @@ public class Method implements Body {
 	public void setTypeIndexes(HashMap<Integer, Integer> allTypeIndexes) {
 		this.allTypeIndexes = allTypeIndexes;
 	}
-	
 
 	public ArrayList<LocalVariables> getAllVariables() {
 		return allVariables;
@@ -98,7 +98,7 @@ public class Method implements Body {
 	public HashMap<Integer, Integer> getTypeIndexes() {
 		return allTypeIndexes;
 	}
-	
+
 	public void setStartBody(String startBody) {
 		this.startBody = startBody;
 	}
@@ -129,6 +129,26 @@ public class Method implements Body {
 		}
 
 		return null;
+	}
+
+	public LocalVariables getLocalVariableByValue(Local localVariable) {
+
+		String variableName = localVariable.getName();
+		String variableType = Converter.getInstance().getTypeInString(localVariable.getType());
+
+		for (LocalVariables variable : allVariables) {
+			if (variable.getVariableName().equals(variableName)) {
+				if (variable.getVariableType().equals(variableType)) {
+					return variable;
+				}
+			}
+		}
+
+		return null;
+	}
+	
+	public void InsertEditedLocalVariable(LocalVariables localVariable) {
+		allVariables.set(allVariables.indexOf(localVariable), localVariable);
 	}
 
 	public Integer getIndexBySootType(Type t) {

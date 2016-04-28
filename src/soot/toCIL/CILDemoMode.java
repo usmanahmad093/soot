@@ -180,7 +180,7 @@ public class CILDemoMode {
 			String fieldName = sootField.getName();
 			String type = Converter.getInstance().getTypeInString(sootField.getType());
 
-			type = (CILModifierBuilder.isVolatile(sootField.getModifiers())? (CILModifiers.VOLATILE + type): type);
+			type = (CILModifierBuilder.isVolatile(sootField.getModifiers())? (type + " " + CILModifiers.VOLATILE): type);
 			
 			Member member = new Member(cilFieldRepresenation, fieldName, type, false, false);
 			allMembers.add(member);
@@ -193,24 +193,25 @@ public class CILDemoMode {
 		for (SootMethod method : clazz.getMethods()) {
 
 			soot.toCIL.structures.Method cilMethod;
-
 			// TODO: staticinitializer
 			// if (method.isStaticInitializer()) {
 
 			// }
 
 			cilMethod = new soot.toCIL.structures.Method(method, refClass);
+			
+			List<Type> allTypes = method.getParameterTypes();
+			addParams(allTypes, cilMethod);
+			
 			String cilMethodHeader = CILMethodBuilder.buildCILMethodHeader(method, cilMethod.getAllParameters());
 			cilMethod.setStartBody(cilMethodHeader);
 
 			if (method.isConcrete()) {
 				Body body = method.retrieveActiveBody();
 				Chain<Local> allLocals = body.getLocals();
-				List<Type> allTypes = method.getParameterTypes();
 
 				addVariables(allLocals, cilMethod);
-				addParams(allTypes, cilMethod);
-
+				
 				transformAndAddInstructions(body.getUnits(), cilMethod);
 				detectMaxStack(cilMethod);
 			}

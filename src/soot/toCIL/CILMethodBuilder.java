@@ -42,7 +42,9 @@ public class CILMethodBuilder {
 		} else {
 			methodName = sootMethod.getName();
 			if (isVirtualMethod(sootMethod, superClass)) {
-				sb.append(" hidebysig virtual final instance ");
+				sb.append(" hidebysig virtual ");
+				sb.append(modifiers[CILModifiers.C_FINAL]);
+				sb.append(" instance ");
 			} else if (checkInterfaceMethod(sootMethod, interfaces)) {
 				sb.append(" hidebysig newslot virtual final instance ");
 			} else {
@@ -52,11 +54,14 @@ public class CILMethodBuilder {
 					sb.append(modifiers[CILModifiers.C_ABSTRACT]);
 					sb.append(" virtual ");
 				} else {
+					String staticornot = (modifiers[CILModifiers.C_STATICORINSTANCE].equals(CILModifiers.STATIC)?CILModifiers.STATIC:"instance");
+					
 					sb.append(" hidebysig ");
+					sb.append(staticornot);
+					sb.append(" ");
 				}
 
-				sb.append(modifiers[CILModifiers.C_STATICORINSTANCE]);
-				sb.append(" ");
+			
 			}
 		}
 

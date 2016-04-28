@@ -5,6 +5,7 @@ import soot.jimple.DoubleConstant;
 import soot.jimple.FloatConstant;
 import soot.jimple.IntConstant;
 import soot.jimple.LongConstant;
+import soot.jimple.NullConstant;
 import soot.jimple.Stmt;
 import soot.jimple.StringConstant;
 import soot.toCIL.structures.Constant;
@@ -39,6 +40,11 @@ public class ConstantVisitor extends AbstractConstantSwitch {
 		Constant constant = new Constant(type, value);
 		stmtV.setConstant(constant);
 	}
+	
+	  public void caseNullConstant(NullConstant n)
+	    {
+	        
+	    }
 	
 	public void caseLongConstant(LongConstant l) {
 		Type type = Type.LONG;

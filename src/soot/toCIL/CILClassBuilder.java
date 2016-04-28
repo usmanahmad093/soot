@@ -1,6 +1,7 @@
 package soot.toCIL;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import soot.Modifier;
 import soot.SootClass;
@@ -10,16 +11,19 @@ import soot.util.Chain;
 
 public class CILClassBuilder {
 	private static final String OBJECT_CLASS = "[mscorlib]System.Object";
+	private static ArrayList<SootClass> baseInterfaces = new ArrayList<>();
 
 	public static String buildCILClass(SootClass sootClass) {
+		baseInterfaces = new ArrayList<>();
+		fillInterfaces(sootClass);
+
 		StringBuilder sb = new StringBuilder();
 		String[] modifiers = CILModifierBuilder.ModifierBuilder(sootClass.getModifiers());
 		sb.append(".class ");
 		String finalOrNot = "";
 		boolean firstValue = true;
-		boolean lastValue = false;
 		int interfaceIndex = 0;
-		
+
 		Chain<SootClass> interfaces = sootClass.getInterfaces();
 		String className = sootClass.getName();
 		String superClass;
@@ -28,19 +32,22 @@ public class CILClassBuilder {
 					: sootClass.getSuperclass().getName());
 		else
 			superClass = OBJECT_CLASS;
-		
+
 		if (sootClass.isFinal()) {
 			finalOrNot = CILModifiers.CLASS_FINAL;
 		}
-		
+
 		if (sootClass.isInterface()) {
+
 			sb.append("interface ");
 			sb.append(modifiers[CILModifiers.C_ACCESS]);
 			sb.append(" abstract auto ansi ");
 			sb.append(className);
 			sb.append(" ");
+
+
 		} else {
-			
+
 			sb.append(modifiers[CILModifiers.C_ACCESS]);
 			sb.append(" ");
 			sb.append(modifiers[CILModifiers.C_ABSTRACT]);
@@ -52,25 +59,40 @@ public class CILClassBuilder {
 			sb.append(" extends ");
 			sb.append(superClass);
 			sb.append(" ");
-			
+
 		}
 		
-		for(SootClass i: interfaces) {
-			String comma = (interfaceIndex == (interfaces.size()  - 1))? "":", ";
-			String printImplements = (firstValue)?"implements ":"";
-			sb.append(printImplements);
-			sb.append(i.getName());
+		if (baseInterfaces.size() != 0) {
+			sb.append("implements ");
+		}
+
+		for (SootClass sootInterface : baseInterfaces) {
+			String name = sootInterface.getName();
+
+			sb.append(name);
+			String comma = ((interfaceIndex + 1)== (baseInterfaces.size())) ? "" : ", ";
+			
+			
 			sb.append(comma);
 			
-			firstValue = false;
 			interfaceIndex++;
+
+		
 		}
-		
-		
+
 		sb.append(" {");
-		
-		
 
 		return sb.toString();
+	}
+
+	private static void fillInterfaces(SootClass sootClass) {
+		SootClass baseClass = null;
+
+		if (sootClass.getInterfaceCount() != 0) {
+			baseInterfaces.add(sootClass.getInterfaces().getFirst());
+			baseClass = sootClass.getInterfaces().getFirst();
+			fillInterfaces(baseClass);
+		}
+		
 	}
 }

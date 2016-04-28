@@ -34,6 +34,7 @@ import soot.SootMethod;
 import soot.SootMethodRef;
 import soot.Type;
 import soot.Value;
+import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
 import soot.jimple.BreakpointStmt;
 import soot.jimple.CaughtExceptionRef;
@@ -63,6 +64,7 @@ import soot.jimple.TableSwitchStmt;
 import soot.jimple.ThisRef;
 import soot.jimple.ThrowStmt;
 import soot.jimple.VirtualInvokeExpr;
+import soot.jimple.internal.JArrayRef;
 import soot.toCIL.instructions.Br;
 import soot.toCIL.instructions.Brfalse;
 import soot.toCIL.instructions.Brtrue;
@@ -78,6 +80,7 @@ import soot.toCIL.instructions.Ret;
 import soot.toCIL.instructions.Stfld;
 import soot.toCIL.instructions.StoreInstruction;
 import soot.toCIL.instructions.Stsfld;
+import soot.toCIL.instructions.Volatile;
 import soot.toCIL.structures.CILModifiers;
 import soot.toCIL.structures.Class;
 import soot.toCIL.structures.Label;
@@ -128,12 +131,12 @@ public class StmtVisitor implements StmtSwitch {
 			exprV.setOriginStmt(stmt);
 			stmt.getInvokeExpr().apply(exprV);
 
-			
 			Type returnType = invokeExpr.getMethod().getReturnType();
-			if (!m.isConstructor() && !(invokeExpr instanceof SpecialInvokeExpr) && !(returnType instanceof soot.VoidType)) {
+			if (!m.isConstructor() && !(invokeExpr instanceof SpecialInvokeExpr)
+					&& !(returnType instanceof soot.VoidType)) {
 				Pop popInstruction = new Pop(stmt);
 				buildInstruction(popInstruction);
-			} 
+			}
 		}
 	}
 
@@ -163,22 +166,32 @@ public class StmtVisitor implements StmtSwitch {
 		SootField field = ((InstanceFieldRef) v).getField();
 		String className = field.getDeclaringClass().getName();
 		String attributeName = field.getName();
-		
-		returnType = (CILModifierBuilder.isVolatile(field.getModifiers())? (CILModifiers.VOLATILE + returnType): returnType);
+
+		if (CILModifierBuilder.isVolatile(field.getModifiers())) {
+			Volatile volatileInstr = new Volatile(stmt);
+			buildInstruction(volatileInstr);
+			
+			returnType = (returnType + " " + CILModifiers.VOLATILE );
+		}
 
 		stfld = new Stfld(stmt, returnType, className, attributeName);
 
 		return stfld;
 	}
-	
+
 	private Stsfld buildStsfldInstruction(Value v, Stmt stmt) {
 		Stsfld stsfld = null;
 		String returnType = Converter.getInstance().getTypeInString(v.getType());
 		SootField field = ((StaticFieldRef) v).getField();
 		String className = field.getDeclaringClass().getName();
 		String attributeName = field.getName();
-		
-		returnType = (CILModifierBuilder.isVolatile(field.getModifiers())? (CILModifiers.VOLATILE + returnType): returnType);
+
+		if (CILModifierBuilder.isVolatile(field.getModifiers())) {
+			Volatile volatileInstr = new Volatile(stmt);
+			buildInstruction(volatileInstr);
+			
+			returnType = (returnType + " " + CILModifiers.VOLATILE );
+		}
 
 		stsfld = new Stsfld(stmt, returnType, className, attributeName);
 
@@ -191,22 +204,32 @@ public class StmtVisitor implements StmtSwitch {
 		String returnType = Converter.getInstance().getTypeInString(v.getType());
 		String className = field.getDeclaringClass().getName();
 		String attributeName = field.getName();
-		
-		returnType = (CILModifierBuilder.isVolatile(field.getModifiers())? (CILModifiers.VOLATILE + returnType): returnType);
+
+		if (CILModifierBuilder.isVolatile(field.getModifiers())) {
+			Volatile volatileInstr = new Volatile(stmt);
+			buildInstruction(volatileInstr);
+			
+			returnType = (returnType + " " + CILModifiers.VOLATILE );
+		}
 
 		ldfld = new Ldfld(stmt, returnType, className, attributeName);
 
 		return ldfld;
 	}
-	
+
 	private Ldsfld buildLdsfldInstruction(Value v, Stmt stmt) {
 		Ldsfld ldsfld = null;
 		SootField field = ((StaticFieldRef) v).getField();
 		String returnType = Converter.getInstance().getTypeInString(v.getType());
 		String className = field.getDeclaringClass().getName();
 		String attributeName = field.getName();
-		
-		returnType = (CILModifierBuilder.isVolatile(field.getModifiers())? (CILModifiers.VOLATILE + returnType): returnType);
+
+		if (CILModifierBuilder.isVolatile(field.getModifiers())) {
+			Volatile volatileInstr = new Volatile(stmt);
+			buildInstruction(volatileInstr);
+			
+			returnType = (returnType + " " + CILModifiers.VOLATILE );
+		}
 
 		ldsfld = new Ldsfld(stmt, returnType, className, attributeName);
 
@@ -225,16 +248,20 @@ public class StmtVisitor implements StmtSwitch {
 
 		constantV.setOriginStmt(stmt);
 		exprV.setOriginStmt(stmt);
-		
-	
 
 		Value lhs = stmt.getLeftOp();
 		Value rhs = stmt.getRightOp();
+		
+		
+		if (lhs instanceof ArrayRef) {
+			ArrayRef array = (ArrayRef) lhs;
+			System.out.println("Index: " + array.getIndex());
+		}
 
 		if (!(rhs instanceof NewExpr)) {
 			if (lhs instanceof Local || lhs instanceof Constant) {
 				buildRightSide(rhs, stmt);
-				
+
 				try {
 					buildInstruction(BuildStoreInstruction(lhs, stmt));
 				} catch (ClassNotFoundException e) {
@@ -252,15 +279,14 @@ public class StmtVisitor implements StmtSwitch {
 			}
 		} else {
 			Value leftValue = stmt.getLeftOp();
-			
-			LocalVariables localVariable = m.getLocalVariableByValue((Local)leftValue);
+
+			LocalVariables localVariable = m.getLocalVariableByValue((Local) leftValue);
 			localVariable.notAssignedByThisRef();
 			m.InsertEditedLocalVariable(localVariable);
 		}
 
 	}
-	
-	
+
 	public void buildRightSide(Value rhs, AssignStmt stmt) {
 		if (rhs instanceof Local || rhs instanceof Constant) {
 			buildInstruction(BuildLoadInstruction(rhs, stmt));
@@ -298,7 +324,7 @@ public class StmtVisitor implements StmtSwitch {
 		} else if (rhs instanceof ParameterRef) {
 			ldargInstruction = BuildLdargInstruction(rhs, stmt);
 		}
-		
+
 		try {
 			storeInstr = BuildStoreInstruction(lhs, stmt);
 			buildInstruction(ldargInstruction);

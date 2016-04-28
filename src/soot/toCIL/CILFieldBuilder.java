@@ -25,9 +25,9 @@ public class CILFieldBuilder {
 		sb.append(" ");
 		sb.append(modifiers[CILModifiers.C_FINAL]);
 		sb.append(" ");
-		sb.append(modifiers[CILModifiers.C_VOLATILE]);
-		sb.append(" ");
 		sb.append(type);
+		sb.append(" ");
+		sb.append(modifiers[CILModifiers.C_VOLATILE]);
 		sb.append(" ");
 		sb.append(fieldName);
 		

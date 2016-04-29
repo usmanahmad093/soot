@@ -267,7 +267,6 @@ public class ExprVisitor implements ExprSwitch {
 
 	@Override
 	public void caseGtExpr(GtExpr v) {
-		String instruction = "";
 
 		Value operand1 = v.getOp1();
 		Value operand2 = v.getOp2();
@@ -459,7 +458,6 @@ public class ExprVisitor implements ExprSwitch {
 	@Override
 	public void caseInterfaceInvokeExpr(InterfaceInvokeExpr v) {
 
-		InvokeExpr invokeExpr = (InvokeExpr) v;
 
 		String methodName = v.getMethod().getName();
 		String returnType = null;
@@ -607,7 +605,7 @@ public class ExprVisitor implements ExprSwitch {
 
 	@Override
 	public void caseNewArrayExpr(NewArrayExpr v) {
-		// TODO Auto-generated method stub
+		System.out.println("new Array");
 
 	}
 
@@ -625,6 +623,7 @@ public class ExprVisitor implements ExprSwitch {
 	@Override
 	public void caseLengthExpr(LengthExpr v) {
 		// TODO Auto-generated method stub
+		System.out.println("Length Expr");
 
 	}
 

@@ -23,6 +23,7 @@ package soot.toCIL;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.jf.dexlib2.Opcode;
 
@@ -33,6 +34,7 @@ import soot.SootField;
 import soot.SootMethod;
 import soot.SootMethodRef;
 import soot.Type;
+import soot.Unit;
 import soot.Value;
 import soot.jimple.ArrayRef;
 import soot.jimple.AssignStmt;
@@ -46,6 +48,7 @@ import soot.jimple.GotoStmt;
 import soot.jimple.IdentityStmt;
 import soot.jimple.IfStmt;
 import soot.jimple.InstanceFieldRef;
+import soot.jimple.IntConstant;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.LookupSwitchStmt;
@@ -81,6 +84,7 @@ import soot.toCIL.instructions.Stfld;
 import soot.toCIL.instructions.StoreInstruction;
 import soot.toCIL.instructions.Stsfld;
 import soot.toCIL.instructions.Volatile;
+import soot.toCIL.instructions.jumps.Beq;
 import soot.toCIL.structures.CILModifiers;
 import soot.toCIL.structures.Class;
 import soot.toCIL.structures.Label;
@@ -89,10 +93,7 @@ import soot.toCIL.structures.Member;
 import soot.toCIL.structures.Method;
 import soot.toCIL.structures.Parameter;
 import soot.toCIL.structures.Variable;
-import soot.toDex.LocalRegisterAssignmentInformation;
-import soot.toDex.Register;
-import soot.toDex.instructions.Insn;
-import soot.toDex.instructions.Insn11x;
+
 
 public class StmtVisitor implements StmtSwitch {
 	private ExprVisitor exprV;
@@ -349,7 +350,6 @@ public class StmtVisitor implements StmtSwitch {
 	}
 
 	public LoadInstruction BuildLoadInstruction(Value rhs, Stmt stmt) {
-		String instruction = "";
 		LoadInstruction instr = null;
 
 		if (rhs instanceof Local) {
@@ -403,9 +403,31 @@ public class StmtVisitor implements StmtSwitch {
 		stmt.getCondition().apply(exprV);
 	}
 
+	//Support: only for Int- Constants
 	@Override
 	public void caseLookupSwitchStmt(LookupSwitchStmt stmt) {
-
+		List<IntConstant> intConstants = stmt.getLookupValues();
+		Value v = stmt.getKey();
+		List<Unit> allUnits = stmt.getTargets();
+		Stmt defaultTarget = (Stmt) stmt.getDefaultTarget();
+		
+		for(IntConstant constant: intConstants) {
+			soot.toCIL.structures.Constant cilConstant = new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT, String.valueOf(constant.value));
+			LoadInstruction loadKey = BuildLoadInstruction(v, stmt);
+			LoadInstruction loadInstr = new LoadInstruction(cilConstant, null, stmt);
+			Unit targetUnit = allUnits.get(intConstants.indexOf(constant));
+			Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel((Stmt) targetUnit);
+			Beq beqInstr = new Beq(targetLabel, stmt);
+			
+			buildInstruction(loadInstr);
+			buildInstruction(loadKey);
+			buildInstruction(beqInstr);
+		}
+		
+		Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel(defaultTarget);
+		Br brInstr = new Br(targetLabel.getLabel(), stmt);
+		
+		buildInstruction(brInstr);
 	}
 
 	// TODO:
@@ -438,8 +460,29 @@ public class StmtVisitor implements StmtSwitch {
 
 	@Override
 	public void caseTableSwitchStmt(TableSwitchStmt stmt) {
-		// TODO Auto-generated method stub
-
+		
+	    List<Unit> allTargets = stmt.getTargets();
+	    Unit defaultTarget = stmt.getDefaultTarget();
+		Value key = stmt.getKey();
+		
+		int caseIndex = 0;
+		
+		
+		for(Unit target: allTargets) {
+			soot.toCIL.structures.Constant constant = new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT, String.valueOf(caseIndex));
+			LoadInstruction loadKey = BuildLoadInstruction(key, stmt);
+			LoadInstruction loadInstr = new LoadInstruction(constant, null, stmt);
+			Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel((Stmt) target);
+			Beq beqInstruction = new Beq(targetLabel, stmt);
+			
+			buildInstruction(loadKey);
+			buildInstruction(loadInstr);
+			buildInstruction(beqInstruction);
+		}
+		
+		Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel((Stmt) defaultTarget);
+		Br brInstruction = new Br(targetLabel.getLabel(), stmt);
+		buildInstruction(brInstruction);
 	}
 
 	// TODO:

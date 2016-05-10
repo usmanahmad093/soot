@@ -81,6 +81,7 @@ import soot.toCIL.instructions.LocalsInit;
 import soot.toCIL.instructions.Newobj;
 import soot.toCIL.instructions.Pop;
 import soot.toCIL.instructions.Ret;
+import soot.toCIL.instructions.Stelem;
 import soot.toCIL.instructions.Stfld;
 import soot.toCIL.instructions.StoreInstruction;
 import soot.toCIL.instructions.Stsfld;
@@ -264,6 +265,20 @@ public class StmtVisitor implements StmtSwitch {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+			} else if (lhs instanceof ArrayRef) {
+				ArrayRef arrayRef = (ArrayRef) lhs;
+				Value indexValue = arrayRef.getIndex();
+				Value localArray = arrayRef.getBase();
+				
+				LoadInstruction loadInstr = BuildLoadInstruction(localArray, stmt);
+				LoadInstruction loadInstr2 = BuildLoadInstruction(indexValue, stmt);
+				
+				buildInstruction(loadInstr);
+				buildInstruction(loadInstr2);
+				buildRightSide(rhs, stmt);
+				
+				Stelem stelemInstr = new Stelem(stmt);
+				buildInstruction(stelemInstr);
 			} else if (lhs instanceof InstanceFieldRef) {
 				Value baseValue = ((InstanceFieldRef) lhs).getBase();
 				buildInstruction(BuildLoadInstruction(baseValue, stmt));

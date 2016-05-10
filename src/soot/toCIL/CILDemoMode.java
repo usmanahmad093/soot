@@ -200,6 +200,7 @@ public class CILDemoMode {
 
 			cilMethod = new soot.toCIL.structures.Method(method, refClass);
 			
+			//TODO: Parameterindex
 			List<Type> allTypes = method.getParameterTypes();
 			addParams(allTypes, cilMethod);
 			
@@ -291,6 +292,7 @@ public class CILDemoMode {
 
 	private void addVariables(Chain<Local> allLocals, Method cilMethod) throws ClassNotFoundException {
 		ArrayList<LocalVariables> allVariables = new ArrayList<>();
+		final String SPECIALCASE = "array";
 
 		// Local Variables
 		for (Local l : allLocals) {
@@ -298,7 +300,11 @@ public class CILDemoMode {
 			String type = Converter.getInstance().getTypeInString(l.getType());
 
 			// TODO: wie kann ich den modfier einer lokalen Variable abrufen?
-			LocalVariables var = new LocalVariables(l.getName(), type, false);
+			String name = l.getName();
+			if (l.getName().equals(SPECIALCASE)) {
+				name = "'" + name + "'"; 
+			}
+			LocalVariables var = new LocalVariables(name, type, false);
 			allVariables.add(var);
 		}
 

@@ -30,6 +30,7 @@ public class Newobj implements Instruction{
 		for(String argumentType: allArgumentTypes) {
 			String comma = (firstArgument)? "": ", ";
 			statement += comma + argumentType;
+			firstArgument = false;
 		}
 		
 		statement += ")";

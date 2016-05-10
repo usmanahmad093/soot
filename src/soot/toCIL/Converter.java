@@ -2,6 +2,7 @@ package soot.toCIL;
 
 import soot.ArrayType;
 import soot.RefType;
+import soot.toCIL.structures.Type;
 
 public class Converter {
 	private static Converter instance = new Converter();
@@ -17,6 +18,8 @@ public class Converter {
 	private static final String INT8 = "int8";
 	private static final String INT16 = "int16";
 	private static final String VOID = "void";
+	
+	private boolean isClassType = false;
 
 	private Converter() {
 	}
@@ -24,22 +27,26 @@ public class Converter {
 	public static Converter getInstance() {
 		return instance;
 	}
+	
 
 	public String getTypeInString(soot.Type askedType) {
-		soot.Type finalType = null;
+		String finalType = null;
+		final String BRACKETS = "[]";
 
 		if (askedType instanceof soot.ArrayType) {
 			ArrayType arrayType = (soot.ArrayType) askedType;
-			finalType = arrayType.getElementType();
+			finalType = Converter.getInstance().ConvertWrapperOrPrimitiveTypeInCIL(arrayType.getElementType());
+			finalType += BRACKETS;
 		} else {
-			finalType = askedType;
+			finalType = Converter.getInstance().ConvertWrapperOrPrimitiveTypeInCIL(askedType);
 		}
 
-		return ConvertWrapperOrPrimitiveTypeInCIL(finalType);
+		return finalType;
 
 	}
 
 	public String ConvertWrapperOrPrimitiveTypeInCIL(soot.Type askedType) {
+		isClassType = false; 
 		if (askedType instanceof soot.RefType) {
 
 			RefType refType = (soot.RefType) askedType;
@@ -84,7 +91,64 @@ public class Converter {
 			return INT16;
 		}
 
+		isClassType = true;
 		return "class " + askedType.toString();
+	}
+	
+	public boolean isClassType() {
+		return isClassType;
+	}
+	
+	public Type getTypeInEnum(soot.Type askedType) {
+		
+		
+		if (askedType instanceof soot.ArrayType) {
+			askedType = ((soot.ArrayType) askedType).getElementType();
+		}
+		
+		if (askedType instanceof soot.RefType) {
+
+			RefType refType = (soot.RefType) askedType;
+			// TODO: refType.getClassName().equals("-");
+			if (refType.getClassName().equals(String.class.getName())) {
+				return Type.STRING;
+
+			} else if (refType.getClassName().equals(Integer.class.getName())) {
+				return Type.INT;
+
+			} else if (refType.getClassName().equals(Boolean.class.getName())) {
+				return Type.BOOLEAN;
+			} else if (refType.getClassName().equals(Character.class.getName())) {
+				return Type.CHAR;
+			} else if (refType.getClassName().equals(Double.class.getName())) {
+				return Type.DOUBLE;
+			} else if (refType.getClassName().equals(Float.class.getName())) {
+				return Type.FLOAT;
+			} else if (refType.getClassName().equals(Long.class.getName())) {
+				return Type.LONG;
+			} else if (refType.getClassName().equals(Byte.class.getName())) {
+				return Type.BYTE;
+			}
+
+		} else if (askedType instanceof soot.IntType) {
+			return Type.INT;
+		} else if (askedType instanceof soot.BooleanType) {
+			return Type.BOOLEAN;
+		} else if (askedType instanceof soot.CharType) {
+			return Type.CHAR;
+		} else if (askedType instanceof soot.DoubleType) {
+			return Type.DOUBLE;
+		} else if (askedType instanceof soot.FloatType) {
+			return Type.FLOAT;
+		} else if (askedType instanceof soot.LongType) {
+			return Type.LONG;
+		} else if (askedType instanceof soot.ByteType) {
+			return Type.BYTE;
+		} else if (askedType instanceof soot.ShortType) {
+			return Type.SHORT;
+		}
+
+		return Type.OTHER;
 	}
 
 }

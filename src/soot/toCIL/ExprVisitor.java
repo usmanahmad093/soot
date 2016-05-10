@@ -84,6 +84,7 @@ import soot.toCIL.instructions.Ceq;
 import soot.toCIL.instructions.Cgt;
 import soot.toCIL.instructions.Clt;
 import soot.toCIL.instructions.Div;
+import soot.toCIL.instructions.Instruction;
 import soot.toCIL.instructions.Ldarg;
 import soot.toCIL.instructions.Ldlen;
 import soot.toCIL.instructions.LoadInstruction;
@@ -492,10 +493,12 @@ public class ExprVisitor implements ExprSwitch {
 		returnType = Converter.getInstance().getTypeInString(v.getMethod().getReturnType());
 		List<Value> allArguments = v.getArgs();
 		ArrayList<String> allArgumentTypes = new ArrayList<>();
+		ArrayList<LoadInstruction>loadInstrForPassingValues = new ArrayList<>();
 
 		for (Value value : allArguments) {
 			LoadInstruction loadInstr = stmtV.BuildLoadInstruction(value, originStmt);
-			stmtV.buildInstruction(loadInstr);
+			//stmtV.buildInstruction(loadInstr);
+			loadInstrForPassingValues.add(loadInstr);
 
 			allArgumentTypes.add(Converter.getInstance().getTypeInString(value.getType()));
 		}
@@ -511,6 +514,11 @@ public class ExprVisitor implements ExprSwitch {
 			Callctor callInstruction = new Callctor(returnType, className, originStmt, allArgumentTypes);
 
 			stmtV.buildInstruction(ldargInstruction);
+			
+			for(LoadInstruction loadInstr: loadInstrForPassingValues) {
+				stmtV.buildInstruction(loadInstr);
+			}
+			
 			stmtV.buildInstruction(callInstruction);
 
 		} else {
@@ -519,6 +527,11 @@ public class ExprVisitor implements ExprSwitch {
 
 			Newobj newobjInstruction = new Newobj(returnType, className, allArgumentTypes, originStmt);
 
+			
+			for(LoadInstruction loadInstr: loadInstrForPassingValues) {
+				stmtV.buildInstruction(loadInstr);
+			}
+			
 			stmtV.buildInstruction(newobjInstruction);
 
 			soot.toCIL.instructions.StoreInstruction storeInstr = null;
@@ -609,9 +622,10 @@ public class ExprVisitor implements ExprSwitch {
 	@Override
 	public void caseNewArrayExpr(NewArrayExpr v) {
 		Value arraySize = v.getSize();
-		String type = Converter.getInstance().getTypeInString(v.getType());
+		String typeInString = Converter.getInstance().getTypeInString(v.getType());
+		soot.toCIL.structures.Type type = Converter.getInstance().getTypeInEnum(v.getType());
 		LoadInstruction loadInstr = stmtV.BuildLoadInstruction(arraySize, originStmt);
-		Newarr newarrInstr = new Newarr(originStmt, type);
+		Newarr newarrInstr = new Newarr(originStmt, type, typeInString);
 		
 		stmtV.buildInstruction(loadInstr);
 		stmtV.buildInstruction(newarrInstr);

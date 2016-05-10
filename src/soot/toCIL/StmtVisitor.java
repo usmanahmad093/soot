@@ -325,6 +325,7 @@ public class StmtVisitor implements StmtSwitch {
 
 	@Override
 	public void caseIdentityStmt(IdentityStmt stmt) {
+		
 		Local lhs = (Local) stmt.getLeftOp();
 		Value rhs = stmt.getRightOp();
 		Ldarg ldargInstruction = null;
@@ -348,8 +349,9 @@ public class StmtVisitor implements StmtSwitch {
 
 	private Ldarg BuildLdargInstruction(Value v, Stmt stmt) {
 
-		Type type = ((ParameterRef) v).getType();
-		Integer index = m.getIndexBySootType(type);
+		ParameterRef ref = (ParameterRef) v;
+		
+		Integer index = m.getIndexByParameterRef(ref);
 		index = (isThisRefAvailable) ? index + 1 : index;
 
 		if (index != null) {

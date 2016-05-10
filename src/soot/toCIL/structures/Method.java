@@ -11,6 +11,7 @@ import soot.SootMethod;
 import soot.Type;
 import soot.Unit;
 import soot.Value;
+import soot.jimple.ParameterRef;
 import soot.toCIL.Converter;
 import soot.toCIL.LabelAssigner;
 import soot.toCIL.StmtVisitor;
@@ -41,6 +42,15 @@ public class Method implements Body {
 		allInstructions = new ArrayList<>();
 		this.sootMethod = sootMethod;
 		startBody = "";
+	}
+	
+	
+	public String getClassName() {
+		return sootMethod.getDeclaringClass().getName();
+	}
+	
+	public String getMethodName() {
+		return sootMethod.getName();
 	}
 
 	public boolean isConstructor() {
@@ -151,9 +161,9 @@ public class Method implements Body {
 		allVariables.set(allVariables.indexOf(localVariable), localVariable);
 	}
 
-	public Integer getIndexBySootType(Type t) {
+	public Integer getIndexByParameterRef(ParameterRef paramRef) {
 
-		return allTypeIndexes.get(t.getNumber());
+		return allTypeIndexes.get(paramRef.getIndex());
 	}
 
 }

@@ -52,6 +52,7 @@ import soot.jimple.IntConstant;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.LookupSwitchStmt;
+import soot.jimple.NewArrayExpr;
 import soot.jimple.NewExpr;
 import soot.jimple.NopStmt;
 import soot.jimple.ParameterRef;
@@ -252,12 +253,6 @@ public class StmtVisitor implements StmtSwitch {
 
 		Value lhs = stmt.getLeftOp();
 		Value rhs = stmt.getRightOp();
-		
-		
-		if (lhs instanceof ArrayRef) {
-			ArrayRef array = (ArrayRef) lhs;
-			System.out.println("Index: " + array.getIndex());
-		}
 
 		if (!(rhs instanceof NewExpr)) {
 			if (lhs instanceof Local || lhs instanceof Constant) {

@@ -85,8 +85,10 @@ import soot.toCIL.instructions.Cgt;
 import soot.toCIL.instructions.Clt;
 import soot.toCIL.instructions.Div;
 import soot.toCIL.instructions.Ldarg;
+import soot.toCIL.instructions.Ldlen;
 import soot.toCIL.instructions.LoadInstruction;
 import soot.toCIL.instructions.Mul;
+import soot.toCIL.instructions.Newarr;
 import soot.toCIL.instructions.Newobj;
 import soot.toCIL.instructions.Or;
 import soot.toCIL.instructions.Rem;
@@ -603,10 +605,16 @@ public class ExprVisitor implements ExprSwitch {
 
 	}
 
+	//TODO: Testing
 	@Override
 	public void caseNewArrayExpr(NewArrayExpr v) {
-		System.out.println("new Array");
-
+		Value arraySize = v.getSize();
+		String type = Converter.getInstance().getTypeInString(v.getType());
+		LoadInstruction loadInstr = stmtV.BuildLoadInstruction(arraySize, originStmt);
+		Newarr newarrInstr = new Newarr(originStmt, type);
+		
+		stmtV.buildInstruction(loadInstr);
+		stmtV.buildInstruction(newarrInstr);
 	}
 
 	@Override
@@ -620,11 +628,19 @@ public class ExprVisitor implements ExprSwitch {
 		return;
 	}
 
+	//TODO: Testen
 	@Override
 	public void caseLengthExpr(LengthExpr v) {
 		// TODO Auto-generated method stub
 		System.out.println("Length Expr");
-
+		
+		Value value = v.getOp();
+		
+		LoadInstruction loadInstr = stmtV.BuildLoadInstruction(value, originStmt);
+		Ldlen ldlenInstr = new Ldlen(originStmt);
+		
+		stmtV.buildInstruction(loadInstr);
+		stmtV.buildInstruction(ldlenInstr);
 	}
 
 	// Logisches not

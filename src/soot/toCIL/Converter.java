@@ -1,11 +1,11 @@
 package soot.toCIL;
 
+import soot.ArrayType;
 import soot.RefType;
 
 public class Converter {
 	private static Converter instance = new Converter();
-	
-	
+
 	private static final String STRING = "string";
 	private static final String INT32 = "int32";
 	private static final String INT64 = "int64";
@@ -17,8 +17,6 @@ public class Converter {
 	private static final String INT8 = "int8";
 	private static final String INT16 = "int16";
 	private static final String VOID = "void";
-	
-	
 
 	private Converter() {
 	}
@@ -28,7 +26,20 @@ public class Converter {
 	}
 
 	public String getTypeInString(soot.Type askedType) {
+		soot.Type finalType = null;
 
+		if (askedType instanceof soot.ArrayType) {
+			ArrayType arrayType = (soot.ArrayType) askedType;
+			finalType = arrayType.getElementType();
+		} else {
+			finalType = askedType;
+		}
+
+		return ConvertWrapperOrPrimitiveTypeInCIL(finalType);
+
+	}
+
+	public String ConvertWrapperOrPrimitiveTypeInCIL(soot.Type askedType) {
 		if (askedType instanceof soot.RefType) {
 
 			RefType refType = (soot.RefType) askedType;
@@ -51,7 +62,7 @@ public class Converter {
 				return INT64;
 			} else if (refType.getClassName().equals(Byte.class.getName())) {
 				return INT8;
-			} 
+			}
 
 		} else if (askedType instanceof soot.IntType) {
 			return INT32;
@@ -69,13 +80,11 @@ public class Converter {
 			return VOID;
 		} else if (askedType instanceof soot.ByteType) {
 			return INT8;
-		} else if(askedType instanceof soot.ShortType) {
+		} else if (askedType instanceof soot.ShortType) {
 			return INT16;
-		} else if (askedType instanceof soot.ArrayType) {
-			return "string[]";
 		}
 
 		return "class " + askedType.toString();
 	}
-	
+
 }

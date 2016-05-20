@@ -40,6 +40,10 @@ public class LoadInstruction implements Instruction {
 			case DOUBLE:
 				return "ldc.r8 " + constant.getValue();
 
+			case NULL:
+				return "ldnull";
+			default:
+				break;
 			}
 		}
 

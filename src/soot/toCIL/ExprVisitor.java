@@ -85,6 +85,7 @@ import soot.toCIL.instructions.Cgt;
 import soot.toCIL.instructions.Clt;
 import soot.toCIL.instructions.Div;
 import soot.toCIL.instructions.Instruction;
+import soot.toCIL.instructions.Isinst;
 import soot.toCIL.instructions.Ldarg;
 import soot.toCIL.instructions.Ldlen;
 import soot.toCIL.instructions.LoadInstruction;
@@ -607,15 +608,29 @@ public class ExprVisitor implements ExprSwitch {
 
 	@Override
 	public void caseCastExpr(CastExpr v) {
-		// TODO Auto-generated method stub
+		Type castType = v.getCastType();
+		Value operand = v.getOp();
 
 	}
 
 	// TODO: statt instanceof = is in C#
 	@Override
 	public void caseInstanceOfExpr(InstanceOfExpr v) {
-		// TODO Auto-generated method stub
-
+		Type type = v.getType();
+		String cilType = Converter.getInstance().getTypeInString(type);
+		Value op = v.getOp();
+		
+		LoadInstruction loadOperand = stmtV.BuildLoadInstruction(op, originStmt);
+		Isinst isinstInstruction = new Isinst(originStmt, cilType);
+		
+		soot.toCIL.structures.Constant cilConstant = new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.NULL, "null");
+		LoadInstruction loadNullConstant = new LoadInstruction(cilConstant, null, originStmt);
+		Ceq ceqInstr = new Ceq(originStmt);
+		
+		stmtV.buildInstruction(loadOperand);
+		stmtV.buildInstruction(isinstInstruction);
+		stmtV.buildInstruction(loadNullConstant);
+		stmtV.buildInstruction(ceqInstr);
 	}
 
 	//TODO: Testing
@@ -664,18 +679,9 @@ public class ExprVisitor implements ExprSwitch {
 		Value source = v.getOp();
 		constantV.setOriginStmt(originStmt);
 		Type type = source.getType();
+		String cilType = Converter.getInstance().getTypeInString(type);
 
-		if (type instanceof IntegerType) {
-
-		} else if (type instanceof FloatType) {
-
-		} else if (type instanceof DoubleType) {
-
-		} else if (type instanceof LongType) {
-
-		} else {
-			throw new RuntimeException("unsupported value type for neg-* opcode: " + type);
-		}
+		
 
 	}
 

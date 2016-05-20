@@ -43,7 +43,10 @@ public class ConstantVisitor extends AbstractConstantSwitch {
 	
 	  public void caseNullConstant(NullConstant n)
 	    {
-	        
+	        Type type = Type.NULL;
+	        String value = "null";
+	        Constant constant = new Constant(type, value);
+	        stmtV.setConstant(constant);
 	    }
 	
 	public void caseLongConstant(LongConstant l) {

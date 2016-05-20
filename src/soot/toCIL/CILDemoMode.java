@@ -320,15 +320,13 @@ public class CILDemoMode {
 		for (Type t : allTypes) {
 			String type = Converter.getInstance().getTypeInString(t);
 
-			Parameter param = new Parameter("param" + String.valueOf(counterParam), type, false);
+			Parameter param = new Parameter(counterParam, "param" + String.valueOf(counterParam), type, false);
 			allParameters.add(param);
-			allTypeIndexes.put(t.getNumber(), counterParam);
 
 			counterParam++;
 		}
 
 		cilMethod.setParameters(allParameters);
-		cilMethod.setTypeIndexes(allTypeIndexes);
 	}
 
 	private void transformAndAddInstructions(PatchingChain<Unit> allUnits, soot.toCIL.structures.Method cilMethod) {

@@ -32,13 +32,10 @@ public class Method implements Body {
 	private ArrayList<Instruction> allInstructions;
 	private SootMethod sootMethod;
 	private String startBody;
-	private HashMap<Integer, Integer> allTypeIndexes; // Integer = number of
-														// Type, Integer = index
 
 	public Method(SootMethod sootMethod, Class refClass) {
 		allVariables = new ArrayList<>();
 		allParameters = new ArrayList<>();
-		allTypeIndexes = new HashMap<>();
 		allInstructions = new ArrayList<>();
 		this.sootMethod = sootMethod;
 		startBody = "";
@@ -89,9 +86,6 @@ public class Method implements Body {
 		this.allInstructions = allInstructions;
 	}
 
-	public void setTypeIndexes(HashMap<Integer, Integer> allTypeIndexes) {
-		this.allTypeIndexes = allTypeIndexes;
-	}
 
 	public ArrayList<LocalVariables> getAllVariables() {
 		return allVariables;
@@ -103,10 +97,6 @@ public class Method implements Body {
 
 	public ArrayList<Instruction> getInstructions() {
 		return allInstructions;
-	}
-
-	public HashMap<Integer, Integer> getTypeIndexes() {
-		return allTypeIndexes;
 	}
 
 	public void setStartBody(String startBody) {
@@ -162,8 +152,10 @@ public class Method implements Body {
 	}
 
 	public Integer getIndexByParameterRef(ParameterRef paramRef) {
-
-		return allTypeIndexes.get(paramRef.getIndex());
+		int indexToSearch = paramRef.getIndex();
+		
+		
+		return allParameters.get(indexToSearch).getParamIndex();
 	}
 
 }

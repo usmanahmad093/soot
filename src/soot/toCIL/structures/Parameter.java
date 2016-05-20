@@ -1,9 +1,11 @@
 package soot.toCIL.structures;
 
 public class Parameter extends Variable {
+	private int index;
 
-	public Parameter(String variableName, String variableType, boolean isFinal) {
+	public Parameter(int index, String variableName, String variableType, boolean isFinal) {
 		super(variableName, variableType, isFinal);
+		this.index = index;
 	}
 
 	@Override
@@ -28,6 +30,10 @@ public class Parameter extends Variable {
 	protected String getCILRepresentation() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public int getParamIndex() {
+		return index;
 	}
 
 }

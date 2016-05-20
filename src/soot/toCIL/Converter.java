@@ -1,5 +1,8 @@
 package soot.toCIL;
 
+import org.omg.CORBA.SystemException;
+import org.omg.CORBA.portable.ApplicationException;
+
 import soot.ArrayType;
 import soot.RefType;
 import soot.toCIL.structures.Type;
@@ -18,6 +21,10 @@ public class Converter {
 	private static final String INT8 = "int8";
 	private static final String INT16 = "int16";
 	private static final String VOID = "void";
+	private static final String INDEXOUTOFRANGEDEXCEPTION = "IndexOutOfRangeException";
+	private static final String NULLREFERENCEEXCEPTION = "NullReferenceException";
+	private static final String OBJECT_CLASS = "[mscorlib]System.Object";
+	
 	
 	private boolean isClassType = false;
 
@@ -45,8 +52,9 @@ public class Converter {
 
 	}
 
-	public String ConvertWrapperOrPrimitiveTypeInCIL(soot.Type askedType) {
+	private String ConvertWrapperOrPrimitiveTypeInCIL(soot.Type askedType) {
 		isClassType = false; 
+		String cilException = "";
 		if (askedType instanceof soot.RefType) {
 
 			RefType refType = (soot.RefType) askedType;
@@ -69,6 +77,12 @@ public class Converter {
 				return INT64;
 			} else if (refType.getClassName().equals(Byte.class.getName())) {
 				return INT8;
+			} else if (refType.getClassName().equals(Object.class.getName())) {
+				return OBJECT_CLASS;
+			}
+			
+			else if ((cilException = isExceptionType(refType)) != null) {
+				return "class " + cilException;
 			}
 
 		} else if (askedType instanceof soot.IntType) {
@@ -95,8 +109,28 @@ public class Converter {
 		return "class " + askedType.toString();
 	}
 	
+	private String isExceptionType(RefType refType) {
+		final String System = "[mscorlib]System.";
+		
+	    if (refType.getClassName().equals(IndexOutOfBoundsException.class.getName())) {
+			return System + INDEXOUTOFRANGEDEXCEPTION;
+		}  else if (refType.getClassName().equals(NullPointerException.class.getName())) {
+			return System + NULLREFERENCEEXCEPTION;
+		} 
+		
+		//...
+		
+		
+		return null;
+	}
+
 	public boolean isClassType() {
 		return isClassType;
+	}
+	
+	public String getClassType(soot.Type askedType) {
+		
+		return askedType.toString();
 	}
 	
 	public Type getTypeInEnum(soot.Type askedType) {
@@ -148,6 +182,7 @@ public class Converter {
 			return Type.SHORT;
 		}
 
+		isClassType = true;
 		return Type.OTHER;
 	}
 

@@ -5,30 +5,35 @@ import soot.toCIL.structures.Label;
 
 public class Nop implements Instruction{
 	
+	private Stmt stmt;
+	private Label label;
 
+	public Nop(Stmt stmt) {
+		this.stmt = stmt;
+	}
 
 	@Override
 	public Stmt getStmt() {
 		// TODO Auto-generated method stub
-		return null;
+		return stmt;
 	}
 
 	@Override
 	public void setLabel(Label label) {
 		// TODO Auto-generated method stub
-		
+		this.label = label;
 	}
 
 	@Override
 	public String getLabel() {
 		// TODO Auto-generated method stub
-		return null;
+		return label.getLabel() + ": ";
 	}
 
 	@Override
 	public String getInstruction() {
 		// TODO Auto-generated method stub
-		return null;
+		return "nop";
 	}
 
 }

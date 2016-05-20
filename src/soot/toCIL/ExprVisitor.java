@@ -34,6 +34,7 @@ import soot.FloatType;
 import soot.IntegerType;
 import soot.Local;
 import soot.LongType;
+import soot.RefType;
 import soot.Type;
 import soot.Value;
 import soot.jimple.AddExpr;
@@ -80,6 +81,7 @@ import soot.toCIL.instructions.And;
 import soot.toCIL.instructions.Call;
 import soot.toCIL.instructions.Callctor;
 import soot.toCIL.instructions.Callvirt;
+import soot.toCIL.instructions.CastInstruction;
 import soot.toCIL.instructions.Ceq;
 import soot.toCIL.instructions.Cgt;
 import soot.toCIL.instructions.Clt;
@@ -184,17 +186,45 @@ public class ExprVisitor implements ExprSwitch {
 	@Override
 	public void caseCmpExpr(CmpExpr v) {
 		System.out.println("CmpExpr");
+		
+
+		
+		
 
 	}
 
 	@Override
 	public void caseCmpgExpr(CmpgExpr v) {
 		System.out.println("CmpgExpr");
+		
+		Value operand1 = v.getOp1();
+		Value operand2 = v.getOp2();
+		
+		LoadInstruction loadOperand1 = stmtV.BuildLoadInstruction(operand1, originStmt);
+		LoadInstruction loadOperand2 = stmtV.BuildLoadInstruction(operand2, originStmt);
+		
+		Cgt cgtInstr = new Cgt(originStmt);
+		
+		stmtV.buildInstruction(loadOperand1);
+		stmtV.buildInstruction(loadOperand2);
+		stmtV.buildInstruction(cgtInstr);
 	}
 
 	@Override
 	public void caseCmplExpr(CmplExpr v) {
 		System.out.println("CmplExpr");
+		
+		Value operand1 = v.getOp1();
+		Value operand2 = v.getOp2();
+		
+		LoadInstruction loadOperand1 = stmtV.BuildLoadInstruction(operand1, originStmt);
+		LoadInstruction loadOperand2 = stmtV.BuildLoadInstruction(operand2, originStmt);
+		
+		Clt cltInstr = new Clt(originStmt);
+		
+		stmtV.buildInstruction(loadOperand1);
+		stmtV.buildInstruction(loadOperand2);
+		stmtV.buildInstruction(cltInstr);
 	}
 
 	@Override
@@ -487,9 +517,7 @@ public class ExprVisitor implements ExprSwitch {
 	@Override
 	public void caseSpecialInvokeExpr(SpecialInvokeExpr v) {
 		Value leftValue = v.getBase();
-		InvokeExpr invokeExpr = (InvokeExpr) v;
 
-		String methodName = v.getMethod().getName();
 		String returnType = null;
 		returnType = Converter.getInstance().getTypeInString(v.getMethod().getReturnType());
 		List<Value> allArguments = v.getArgs();
@@ -509,8 +537,10 @@ public class ExprVisitor implements ExprSwitch {
 		LocalVariables localVariable = m.getLocalVariableByValue((Local) leftValue);
 
 		if (localVariable.assignedByThisRef()) {
-			String className = v.getMethod().getDeclaringClass().getName();
-			className = (className.equals(Object.class.getName())) ? "[mscorlib]System.Object" : className;
+			//String className = v.getMethod().getDeclaringClass().getName();
+			//className = (className.equals(Object.class.getName())) ? "[mscorlib]System.Object" : className;
+			RefType type = v.getMethod().getDeclaringClass().getType();
+			String className = Converter.getInstance().getTypeInString(type);
 			Ldarg ldargInstruction = new Ldarg(0, originStmt);
 			Callctor callInstruction = new Callctor(returnType, className, originStmt, allArgumentTypes);
 
@@ -523,8 +553,8 @@ public class ExprVisitor implements ExprSwitch {
 			stmtV.buildInstruction(callInstruction);
 
 		} else {
-			String className = v.getMethod().getDeclaringClass().getName();
-			className = (className.equals(Object.class.getName())) ? "[mscorlib]System.Object" : className;
+			RefType type = v.getMethod().getDeclaringClass().getType();
+			String className = Converter.getInstance().getTypeInString(type);
 
 			Newobj newobjInstruction = new Newobj(returnType, className, allArgumentTypes, originStmt);
 
@@ -554,12 +584,9 @@ public class ExprVisitor implements ExprSwitch {
 		// TODO Auto-generated method stub
 		String methodName = v.getMethod().getName();
 
-		InvokeExpr invokeExpr = (InvokeExpr) v;
-
 		String returnType = Converter.getInstance().getTypeInString(v.getMethod().getReturnType());
 
-		List<Value> allValues = v.getArgs();
-		List<Type> allTypes = new LinkedList<>();
+
 		List<Value> allArguments = v.getArgs();
 		ArrayList<String> allArgumentTypes = new ArrayList<>();
 
@@ -610,7 +637,18 @@ public class ExprVisitor implements ExprSwitch {
 	public void caseCastExpr(CastExpr v) {
 		Type castType = v.getCastType();
 		Value operand = v.getOp();
+		soot.toCIL.structures.Type cilType = Converter.getInstance().getTypeInEnum(castType);
+		String classType = null;
+		
+		if (!Converter.getInstance().isClassType()) {
+			classType = Converter.getInstance().getClassType(castType);
+		}
+		
+		LoadInstruction loadValueInstr = stmtV.BuildLoadInstruction(operand, originStmt);
+		CastInstruction castInstruction = new CastInstruction(originStmt, cilType, classType);
 
+		stmtV.buildInstruction(loadValueInstr);
+		stmtV.buildInstruction(castInstruction);
 	}
 
 	// TODO: statt instanceof = is in C#

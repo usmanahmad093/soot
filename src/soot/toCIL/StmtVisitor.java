@@ -79,12 +79,14 @@ import soot.toCIL.instructions.Ldsfld;
 import soot.toCIL.instructions.LoadInstruction;
 import soot.toCIL.instructions.LocalsInit;
 import soot.toCIL.instructions.Newobj;
+import soot.toCIL.instructions.Nop;
 import soot.toCIL.instructions.Pop;
 import soot.toCIL.instructions.Ret;
 import soot.toCIL.instructions.Stelem;
 import soot.toCIL.instructions.Stfld;
 import soot.toCIL.instructions.StoreInstruction;
 import soot.toCIL.instructions.Stsfld;
+import soot.toCIL.instructions.Throw;
 import soot.toCIL.instructions.Volatile;
 import soot.toCIL.instructions.jumps.Beq;
 import soot.toCIL.structures.CILModifiers;
@@ -103,7 +105,6 @@ public class StmtVisitor implements StmtSwitch {
 	private Method m;
 	private ArrayList<Instruction> allInstructions;
 	private soot.toCIL.structures.Constant constant;
-	private boolean isThisRefAvailable = false;
 
 	public StmtVisitor(Method m) {
 		constantV = new ConstantVisitor(this);
@@ -318,6 +319,19 @@ public class StmtVisitor implements StmtSwitch {
 			buildInstruction(buildLdfldInstruction(rhs, stmt));
 		} else if (rhs instanceof StaticFieldRef) {
 			buildInstruction(buildLdsfldInstruction(rhs, stmt));
+		} else if (rhs instanceof ArrayRef) {
+			ArrayRef arrayRef = (ArrayRef) rhs;
+			Value indexValue = arrayRef.getIndex();
+			Value localArray = arrayRef.getBase();
+			
+			LoadInstruction loadInstr = BuildLoadInstruction(localArray, stmt);
+			LoadInstruction loadInstr2 = BuildLoadInstruction(indexValue, stmt);
+			
+			buildInstruction(loadInstr);
+			buildInstruction(loadInstr2);
+			
+			Stelem stelemInstr = new Stelem(stmt);
+			buildInstruction(stelemInstr);
 		} else {
 			rhs.apply(exprV);
 		}
@@ -352,7 +366,9 @@ public class StmtVisitor implements StmtSwitch {
 		ParameterRef ref = (ParameterRef) v;
 		
 		Integer index = m.getIndexByParameterRef(ref);
-		index = (isThisRefAvailable) ? index + 1 : index;
+		
+
+		index = (!m.isStatic()) ? index + 1 : index;
 
 		if (index != null) {
 			return new Ldarg(index, stmt);
@@ -442,14 +458,15 @@ public class StmtVisitor implements StmtSwitch {
 		buildInstruction(brInstr);
 	}
 
-	// TODO:
 	@Override
 	public void caseNopStmt(NopStmt stmt) {
+		Nop nopInstr = new Nop(stmt);
+		
+		buildInstruction(nopInstr);
 	}
 
 	@Override
 	public void caseRetStmt(RetStmt stmt) {
-		// TODO Auto-generated method stub
 		return;
 	}
 
@@ -502,8 +519,13 @@ public class StmtVisitor implements StmtSwitch {
 	public void caseThrowStmt(ThrowStmt stmt) {
 		// TODO Auto-generated method stub
 		Value exception = stmt.getOp();
-		constantV.setOriginStmt(stmt);
-
+		
+		
+		LoadInstruction loadException = BuildLoadInstruction(exception, stmt);
+		Throw throwInstr = new Throw(stmt);
+		
+		buildInstruction(loadException);
+		buildInstruction(throwInstr);
 	}
 
 	@Override

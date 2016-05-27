@@ -1,19 +1,18 @@
 package soot.toCIL;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import soot.Modifier;
+
 import soot.SootClass;
-import soot.SootField;
 import soot.toCIL.structures.CILModifiers;
-import soot.util.Chain;
+
 
 public class CILClassBuilder {
 	private static final String OBJECT_CLASS = "[mscorlib]System.Object";
 	private static ArrayList<SootClass> baseInterfaces = new ArrayList<>();
 
-	public static String buildCILClass(SootClass sootClass) {
+	
+	public static String buildCILClassHeader(SootClass sootClass) {
 		baseInterfaces = new ArrayList<>();
 		fillInterfaces(sootClass);
 
@@ -21,10 +20,9 @@ public class CILClassBuilder {
 		String[] modifiers = CILModifierBuilder.ModifierBuilder(sootClass.getModifiers());
 		sb.append(".class ");
 		String finalOrNot = "";
-		boolean firstValue = true;
 		int interfaceIndex = 0;
 
-		Chain<SootClass> interfaces = sootClass.getInterfaces();
+
 		String className = sootClass.getName();
 		String superClass;
 		if (sootClass.hasSuperclass())
@@ -62,10 +60,16 @@ public class CILClassBuilder {
 
 		}
 		
+		/*
+		 * If The SootClass implements one or several Interfaces... keyword "implemented" has to be printed
+		 */
 		if (baseInterfaces.size() != 0) {
 			sb.append("implements ");
 		}
 
+		/*
+		 * Print Interfaces which are implemented by the SootClass
+		 */
 		for (SootClass sootInterface : baseInterfaces) {
 			String name = sootInterface.getName();
 
@@ -85,6 +89,9 @@ public class CILClassBuilder {
 		return sb.toString();
 	}
 
+	/*
+	 * This Method fills the Interfaces in ArrayList which are implemented by the current SootClass
+	 */
 	private static void fillInterfaces(SootClass sootClass) {
 		SootClass baseClass = null;
 

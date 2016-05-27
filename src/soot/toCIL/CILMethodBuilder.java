@@ -88,8 +88,10 @@ public class CILMethodBuilder {
 		return false;
 	}
 
+	/*
+	 * This Method checks if the SootMethod is an Interface Method. 
+	 */
 	private static boolean checkInterfaceMethod(SootMethod askedMethod, Chain<SootClass> allInterfaces) {
-		boolean methodAvailable = false;
 
 		for (SootClass i : allInterfaces) {
 			List<SootMethod>allMethods = i.getMethods();
@@ -102,6 +104,10 @@ public class CILMethodBuilder {
 					return true;
 				}
 			}
+			
+			/*
+			 * Look at subsignatures in the Super InterfaceClasses
+			 */
 			Chain<SootClass> superInterfaceClasses = i.getInterfaces();
 			if (superInterfaceClasses != null) {
 				if (checkInterfaceMethod(askedMethod, superInterfaceClasses) == true) {
@@ -113,6 +119,8 @@ public class CILMethodBuilder {
 
 		return false;
 	}
+
+	
 
 	public static String getParamsInString(ArrayList<Parameter> allParameters) {
 		String params = "";

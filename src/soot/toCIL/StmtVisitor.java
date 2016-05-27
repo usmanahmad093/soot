@@ -98,7 +98,6 @@ import soot.toCIL.structures.Method;
 import soot.toCIL.structures.Parameter;
 import soot.toCIL.structures.Variable;
 
-
 public class StmtVisitor implements StmtSwitch {
 	private ExprVisitor exprV;
 	private ConstantVisitor constantV;
@@ -152,7 +151,7 @@ public class StmtVisitor implements StmtSwitch {
 			String lhsName = ((Local) lhs).getName();
 			String type = Converter.getInstance().getTypeInString(((Local) lhs).getType());
 
-			LocalVariables otherVariable = new LocalVariables(lhsName, type, false);
+			LocalVariables otherVariable = new LocalVariables(lhsName, type);
 			LocalVariables localVar = (LocalVariables) m.searchforVariableAndGetIt(otherVariable);
 
 			if (localVar != null) {
@@ -174,8 +173,8 @@ public class StmtVisitor implements StmtSwitch {
 		if (CILModifierBuilder.isVolatile(field.getModifiers())) {
 			Volatile volatileInstr = new Volatile(stmt);
 			buildInstruction(volatileInstr);
-			
-			returnType = (returnType + " " + CILModifiers.VOLATILE );
+
+			returnType = (returnType + " " + CILModifiers.VOLATILE);
 		}
 
 		stfld = new Stfld(stmt, returnType, className, attributeName);
@@ -193,8 +192,8 @@ public class StmtVisitor implements StmtSwitch {
 		if (CILModifierBuilder.isVolatile(field.getModifiers())) {
 			Volatile volatileInstr = new Volatile(stmt);
 			buildInstruction(volatileInstr);
-			
-			returnType = (returnType + " " + CILModifiers.VOLATILE );
+
+			returnType = (returnType + " " + CILModifiers.VOLATILE);
 		}
 
 		stsfld = new Stsfld(stmt, returnType, className, attributeName);
@@ -212,8 +211,8 @@ public class StmtVisitor implements StmtSwitch {
 		if (CILModifierBuilder.isVolatile(field.getModifiers())) {
 			Volatile volatileInstr = new Volatile(stmt);
 			buildInstruction(volatileInstr);
-			
-			returnType = (returnType + " " + CILModifiers.VOLATILE );
+
+			returnType = (returnType + " " + CILModifiers.VOLATILE);
 		}
 
 		ldfld = new Ldfld(stmt, returnType, className, attributeName);
@@ -231,8 +230,8 @@ public class StmtVisitor implements StmtSwitch {
 		if (CILModifierBuilder.isVolatile(field.getModifiers())) {
 			Volatile volatileInstr = new Volatile(stmt);
 			buildInstruction(volatileInstr);
-			
-			returnType = (returnType + " " + CILModifiers.VOLATILE );
+
+			returnType = (returnType + " " + CILModifiers.VOLATILE);
 		}
 
 		ldsfld = new Ldsfld(stmt, returnType, className, attributeName);
@@ -250,11 +249,15 @@ public class StmtVisitor implements StmtSwitch {
 	@Override
 	public void caseAssignStmt(AssignStmt stmt) {
 
-		constantV.setOriginStmt(stmt);
-		exprV.setOriginStmt(stmt);
+		// constantV.setOriginStmt(stmt);
+		// exprV.setOriginStmt(stmt);
 
 		Value lhs = stmt.getLeftOp();
 		Value rhs = stmt.getRightOp();
+		
+		if (m.getMethodName().equals("testIfStmt")) {
+			int debug = 0;
+		}
 
 		if (!(rhs instanceof NewExpr)) {
 			if (lhs instanceof Local || lhs instanceof Constant) {
@@ -270,14 +273,14 @@ public class StmtVisitor implements StmtSwitch {
 				ArrayRef arrayRef = (ArrayRef) lhs;
 				Value indexValue = arrayRef.getIndex();
 				Value localArray = arrayRef.getBase();
-				
+
 				LoadInstruction loadInstr = BuildLoadInstruction(localArray, stmt);
 				LoadInstruction loadInstr2 = BuildLoadInstruction(indexValue, stmt);
-				
+
 				buildInstruction(loadInstr);
 				buildInstruction(loadInstr2);
 				buildRightSide(rhs, stmt);
-				
+
 				Stelem stelemInstr = new Stelem(stmt);
 				buildInstruction(stelemInstr);
 			} else if (lhs instanceof InstanceFieldRef) {
@@ -300,6 +303,8 @@ public class StmtVisitor implements StmtSwitch {
 	}
 
 	public void buildRightSide(Value rhs, AssignStmt stmt) {
+		exprV.setOriginStmt(stmt);
+		
 		if (rhs instanceof Local || rhs instanceof Constant) {
 			buildInstruction(BuildLoadInstruction(rhs, stmt));
 		} else if (rhs instanceof InvokeExpr) {
@@ -312,7 +317,10 @@ public class StmtVisitor implements StmtSwitch {
 				VirtualInvokeExpr virtualInvokeExpr = (VirtualInvokeExpr) invokeExpr;
 				Value value = virtualInvokeExpr.getBase();
 				buildInstruction(BuildLoadInstruction(value, stmt));
+			} else {
+				rhs.apply(exprV);
 			}
+
 		} else if (rhs instanceof InstanceFieldRef) {
 			Value baseValue = ((InstanceFieldRef) rhs).getBase();
 			buildInstruction(BuildLoadInstruction(baseValue, stmt));
@@ -323,13 +331,13 @@ public class StmtVisitor implements StmtSwitch {
 			ArrayRef arrayRef = (ArrayRef) rhs;
 			Value indexValue = arrayRef.getIndex();
 			Value localArray = arrayRef.getBase();
-			
+
 			LoadInstruction loadInstr = BuildLoadInstruction(localArray, stmt);
 			LoadInstruction loadInstr2 = BuildLoadInstruction(indexValue, stmt);
-			
+
 			buildInstruction(loadInstr);
 			buildInstruction(loadInstr2);
-			
+
 			Stelem stelemInstr = new Stelem(stmt);
 			buildInstruction(stelemInstr);
 		} else {
@@ -339,7 +347,7 @@ public class StmtVisitor implements StmtSwitch {
 
 	@Override
 	public void caseIdentityStmt(IdentityStmt stmt) {
-		
+
 		Local lhs = (Local) stmt.getLeftOp();
 		Value rhs = stmt.getRightOp();
 		Ldarg ldargInstruction = null;
@@ -364,9 +372,8 @@ public class StmtVisitor implements StmtSwitch {
 	private Ldarg BuildLdargInstruction(Value v, Stmt stmt) {
 
 		ParameterRef ref = (ParameterRef) v;
-		
+
 		Integer index = m.getIndexByParameterRef(ref);
-		
 
 		index = (!m.isStatic()) ? index + 1 : index;
 
@@ -384,7 +391,7 @@ public class StmtVisitor implements StmtSwitch {
 			String rhsName = ((Local) rhs).getName();
 			String type = Converter.getInstance().getTypeInString(((Local) rhs).getType());
 
-			LocalVariables otherVariable = new LocalVariables(rhsName, type, false);
+			LocalVariables otherVariable = new LocalVariables(rhsName, type);
 			Variable var = m.searchforVariableAndGetIt(otherVariable);
 
 			if (var != null) {
@@ -431,37 +438,38 @@ public class StmtVisitor implements StmtSwitch {
 		stmt.getCondition().apply(exprV);
 	}
 
-	//Support: only for Int- Constants
+	// Support: only for Int- Constants
 	@Override
 	public void caseLookupSwitchStmt(LookupSwitchStmt stmt) {
 		List<IntConstant> intConstants = stmt.getLookupValues();
 		Value v = stmt.getKey();
 		List<Unit> allUnits = stmt.getTargets();
 		Stmt defaultTarget = (Stmt) stmt.getDefaultTarget();
-		
-		for(IntConstant constant: intConstants) {
-			soot.toCIL.structures.Constant cilConstant = new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT, String.valueOf(constant.value));
+
+		for (IntConstant constant : intConstants) {
+			soot.toCIL.structures.Constant cilConstant = new soot.toCIL.structures.Constant(
+					soot.toCIL.structures.Type.INT, String.valueOf(constant.value));
 			LoadInstruction loadKey = BuildLoadInstruction(v, stmt);
 			LoadInstruction loadInstr = new LoadInstruction(cilConstant, null, stmt);
 			Unit targetUnit = allUnits.get(intConstants.indexOf(constant));
 			Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel((Stmt) targetUnit);
 			Beq beqInstr = new Beq(targetLabel, stmt);
-			
+
 			buildInstruction(loadInstr);
 			buildInstruction(loadKey);
 			buildInstruction(beqInstr);
 		}
-		
+
 		Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel(defaultTarget);
 		Br brInstr = new Br(targetLabel.getLabel(), stmt);
-		
+
 		buildInstruction(brInstr);
 	}
 
 	@Override
 	public void caseNopStmt(NopStmt stmt) {
 		Nop nopInstr = new Nop(stmt);
-		
+
 		buildInstruction(nopInstr);
 	}
 
@@ -489,26 +497,26 @@ public class StmtVisitor implements StmtSwitch {
 
 	@Override
 	public void caseTableSwitchStmt(TableSwitchStmt stmt) {
-		
-	    List<Unit> allTargets = stmt.getTargets();
-	    Unit defaultTarget = stmt.getDefaultTarget();
+
+		List<Unit> allTargets = stmt.getTargets();
+		Unit defaultTarget = stmt.getDefaultTarget();
 		Value key = stmt.getKey();
-		
+
 		int caseIndex = 0;
-		
-		
-		for(Unit target: allTargets) {
-			soot.toCIL.structures.Constant constant = new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT, String.valueOf(caseIndex));
+
+		for (Unit target : allTargets) {
+			soot.toCIL.structures.Constant constant = new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT,
+					String.valueOf(caseIndex));
 			LoadInstruction loadKey = BuildLoadInstruction(key, stmt);
 			LoadInstruction loadInstr = new LoadInstruction(constant, null, stmt);
 			Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel((Stmt) target);
 			Beq beqInstruction = new Beq(targetLabel, stmt);
-			
+
 			buildInstruction(loadKey);
 			buildInstruction(loadInstr);
 			buildInstruction(beqInstruction);
 		}
-		
+
 		Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel((Stmt) defaultTarget);
 		Br brInstruction = new Br(targetLabel.getLabel(), stmt);
 		buildInstruction(brInstruction);
@@ -519,11 +527,10 @@ public class StmtVisitor implements StmtSwitch {
 	public void caseThrowStmt(ThrowStmt stmt) {
 		// TODO Auto-generated method stub
 		Value exception = stmt.getOp();
-		
-		
+
 		LoadInstruction loadException = BuildLoadInstruction(exception, stmt);
 		Throw throwInstr = new Throw(stmt);
-		
+
 		buildInstruction(loadException);
 		buildInstruction(throwInstr);
 	}

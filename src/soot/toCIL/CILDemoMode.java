@@ -1,33 +1,19 @@
 package soot.toCIL;
 
-import java.io.FileWriter;
+
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
-import jdk.nashorn.internal.codegen.CompilerConstants.Call;
-import jdk.nashorn.internal.runtime.StoredScript;
 import soot.Body;
 import soot.Local;
 import soot.PatchingChain;
-import soot.RefType;
-import soot.Scene;
 import soot.SootClass;
 import soot.SootField;
 import soot.SootMethod;
 import soot.Type;
 import soot.Unit;
-import soot.Value;
-import soot.baf.StoreInst;
-import soot.jimple.AssignStmt;
-import soot.jimple.IdentityStmt;
-import soot.jimple.Jimple;
-import soot.jimple.JimpleBody;
-import soot.jimple.Stmt;
 import soot.toCIL.instructions.AddInstruction;
 import soot.toCIL.instructions.And;
 import soot.toCIL.instructions.Ceq;
@@ -61,7 +47,6 @@ import soot.util.Chain;
  * Only for Test purposes
  */
 public class CILDemoMode {
-	private static final String OBJECT_CLASS = "[mscorlib]System.Object";
 	private Class refClass;
 	int hashmapSize = 0;
 	public static final String STRANGE_TYPE = "byte";
@@ -93,6 +78,10 @@ public class CILDemoMode {
 		return new CILDemoMode();
 	}
 
+	
+	/*
+	 * This Method fills the CIL Constructs into the StringBuilder
+	 */
 	public void printCILCode(StringBuilder sbForTextFile) throws IOException {
 
 		ArrayList<soot.toCIL.structures.Method> allMethods = refClass.getMethods();
@@ -100,7 +89,6 @@ public class CILDemoMode {
 		sbForTextFile.append(refClass.getStartBody() + "\n");
 		System.out.println(refClass.getStartBody());
 		printFields(refClass, sbForTextFile);
-		String mainMethodName = Scene.v().getMainMethod().getName();
 
 		for (soot.toCIL.structures.Method m : allMethods) {
 
@@ -137,6 +125,10 @@ public class CILDemoMode {
 
 	}
 
+	/*
+	 * This Method fills the cil attributes into the StringBuilder
+	 */
+	
 	private void printFields(Class c, StringBuilder sbForTextFile) {
 		// TODO Auto-generated method stub
 		ArrayList<Member> allMembers = c.getMembers();
@@ -162,16 +154,12 @@ public class CILDemoMode {
 		}
 	}
 
+	/*
+	 * This Method converts the Jimple Code in CIL Code
+	 */
 	public void transformJimpleToCIL(SootClass clazz) throws ClassNotFoundException {
 
-		String className = clazz.getName();
-		String superClass;
-		if (clazz.hasSuperclass())
-			superClass = (clazz.getSuperclass().getName().equals(Object.class.getName()) ? OBJECT_CLASS
-					: clazz.getSuperclass().getName());
-		else
-			superClass = OBJECT_CLASS;
-
+	
 		Chain<SootField> sootFields = clazz.getFields();
 		ArrayList<Member> allMembers = new ArrayList<>();
 
@@ -182,33 +170,30 @@ public class CILDemoMode {
 
 			type = (CILModifierBuilder.isVolatile(sootField.getModifiers())? (type + " " + CILModifiers.VOLATILE): type);
 			
-			Member member = new Member(cilFieldRepresenation, fieldName, type, false, false);
+			Member member = new Member(cilFieldRepresenation, fieldName, type);
 			allMembers.add(member);
 		}
 
 		refClass = new Class(allMembers);
-		String startBody = CILClassBuilder.buildCILClass(clazz);
+		String startBody = CILClassBuilder.buildCILClassHeader(clazz);
 		refClass.setStartBody(startBody);
 
-		for (SootMethod method : clazz.getMethods()) {
+		for (SootMethod sootMethod : clazz.getMethods()) {
 
 			soot.toCIL.structures.Method cilMethod;
-			// TODO: staticinitializer
-			// if (method.isStaticInitializer()) {
+		
 
-			// }
-
-			cilMethod = new soot.toCIL.structures.Method(method, refClass);
+			cilMethod = new soot.toCIL.structures.Method(sootMethod, refClass);
 			
-			//TODO: Parameterindex
-			List<Type> allTypes = method.getParameterTypes();
+		
+			List<Type> allTypes = sootMethod.getParameterTypes();
 			addParams(allTypes, cilMethod);
 			
-			String cilMethodHeader = CILMethodBuilder.buildCILMethodHeader(method, cilMethod.getAllParameters());
+			String cilMethodHeader = CILMethodBuilder.buildCILMethodHeader(sootMethod, cilMethod.getAllParameters());
 			cilMethod.setStartBody(cilMethodHeader);
 
-			if (method.isConcrete()) {
-				Body body = method.retrieveActiveBody();
+			if (sootMethod.isConcrete()) {
+				Body body = sootMethod.retrieveActiveBody();
 				Chain<Local> allLocals = body.getLocals();
 
 				addVariables(allLocals, cilMethod);
@@ -221,6 +206,10 @@ public class CILDemoMode {
 		}
 
 	}
+	
+	/*
+	 * This function detects how many Values should be maximal pushed into Stack  
+	 */
 
 	private void detectMaxStack(soot.toCIL.structures.Method cilMethod) {
 		int countStackElements = 0;
@@ -235,50 +224,41 @@ public class CILDemoMode {
 		for (Instruction instr : allInstructions) {
 
 			if (instr instanceof AddInstruction) {
-				countStackElements -= 2;
+				countStackElements--;
 			} else if (instr instanceof Newobj) {
 				countStackElements++;
 			} else if (instr instanceof And) {
-				countStackElements -= 2;
+				countStackElements--;
 			} else if (instr instanceof Ceq) {
-				countStackElements -= 2;
+				countStackElements--;
 			} else if (instr instanceof Cgt) {
-				countStackElements -= 2;
+				countStackElements--;
 			} else if (instr instanceof Clt) {
-				countStackElements -= 2;
+				countStackElements--;
 			} else if (instr instanceof Div) {
-				countStackElements -= 2;
+				countStackElements--;
 			} else if (instr instanceof Ldarg) {
 				countStackElements++;
 			} else if (instr instanceof LoadInstruction) {
 				countStackElements++;
 			} else if (instr instanceof Mul) {
-				countStackElements -= 2;
+				countStackElements--;
 			} else if (instr instanceof Or) {
-				countStackElements -= 2;
+				countStackElements--;
 			} else if (instr instanceof Rem) {
-				countStackElements -= 2;
+				countStackElements--;
 			} else if (instr instanceof Shl) {
-				countStackElements -= 2;
+				countStackElements--;
 			} else if (instr instanceof Shr) {
-				countStackElements -= 2;
+				countStackElements--;
 			} else if (instr instanceof ShrUn) {
-				countStackElements -= 2;
+				countStackElements--;
 			} else if (instr instanceof StoreInstruction) {
 				countStackElements--;
 			} else if (instr instanceof Sub) {
-				countStackElements -= 2;
+				countStackElements--;
 			} else if (instr instanceof Xor) {
-				countStackElements -= 2;
-			} else if (instr instanceof soot.toCIL.instructions.Call) {
-				soot.toCIL.instructions.Call callInstr = (soot.toCIL.instructions.Call) instr;
-
-				String returnType = callInstr.getReturnType();
-
-				if (!returnType.equals("void")) {
-					countStackElements++;
-				}
-
+				countStackElements--;
 			}
 
 			if (maxStack < countStackElements) {
@@ -290,6 +270,10 @@ public class CILDemoMode {
 
 	}
 
+	
+	/*
+	 * Add Local Variables into the Collection
+	 */
 	private void addVariables(Chain<Local> allLocals, Method cilMethod) throws ClassNotFoundException {
 		ArrayList<LocalVariables> allVariables = new ArrayList<>();
 		final String SPECIALCASE = "array";
@@ -304,23 +288,25 @@ public class CILDemoMode {
 			if (l.getName().equals(SPECIALCASE)) {
 				name = "'" + name + "'"; 
 			}
-			LocalVariables var = new LocalVariables(name, type, false);
+			LocalVariables var = new LocalVariables(name, type);
 			allVariables.add(var);
 		}
 
 		cilMethod.setVariables(allVariables);
 	}
 
+	/*
+	 * Add Parameters into the Collection
+	 */
 	private void addParams(List<Type> allTypes, soot.toCIL.structures.Method cilMethod) throws ClassNotFoundException {
 		ArrayList<Parameter> allParameters = new ArrayList<>();
-		HashMap<Integer, Integer> allTypeIndexes = new HashMap<>();
 
 		int counterParam = 0;
 
 		for (Type t : allTypes) {
 			String type = Converter.getInstance().getTypeInString(t);
 
-			Parameter param = new Parameter(counterParam, "param" + String.valueOf(counterParam), type, false);
+			Parameter param = new Parameter(counterParam, "param" + String.valueOf(counterParam), type);
 			allParameters.add(param);
 
 			counterParam++;
@@ -333,6 +319,7 @@ public class CILDemoMode {
 		ArrayList<LocalVariables> allVariables = cilMethod.getAllVariables();
 		StmtVisitor stmtV = new StmtVisitor(cilMethod);
 
+		// If Variables declared, add LocalsInit Instruction  
 		if (allVariables.size() != 0) {
 			LocalsInit initInstruction = new LocalsInit(allVariables);
 			stmtV.buildInstruction(initInstruction);

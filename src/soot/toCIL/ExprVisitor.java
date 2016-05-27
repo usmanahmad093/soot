@@ -710,14 +710,14 @@ public class ExprVisitor implements ExprSwitch {
 		stmtV.buildInstruction(ldlenInstr);
 	}
 
-	// Logisches not
+	/*
+	 * TODO: How to Invoke This Case?
+	 */
 	@Override
 	public void caseNegExpr(NegExpr v) {
-		// TODO Auto-generated method stub
 		Value source = v.getOp();
-		constantV.setOriginStmt(originStmt);
 		Type type = source.getType();
-		String cilType = Converter.getInstance().getTypeInString(type);
+		//String cilType = Converter.getInstance().getTypeInString(type);
 
 		
 

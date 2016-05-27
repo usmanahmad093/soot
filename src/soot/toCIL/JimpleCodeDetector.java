@@ -17,11 +17,17 @@ public class JimpleCodeDetector {
 		return instance;
 	}
 
+	/**
+	 * Check for specialCases such as valueOf() Method from Wrapper Class
+	 * @param invokeExpr
+	 * @return
+	 */
+	
 	public boolean checkStaticInvokeExpr(InvokeExpr invokeExpr) {
 
 		if (invokeExpr instanceof StaticInvokeExpr) {
 
-			if (!isWrapperClassType(invokeExpr) && isValueOfMethod(invokeExpr.getMethod().getName())) {
+			if (isWrapperClassType(invokeExpr) && isValueOfMethod(invokeExpr.getMethod().getName())) {
 				return true;
 			}
 
@@ -38,10 +44,10 @@ public class JimpleCodeDetector {
 		String pattern = (className.length() > 4) ? className.substring(0, 5) : className;
 
 		if (pattern.equals(otherClassToSearch)) {
-			return true;
+			return false;
 		}
 
-		return false;
+		return true;
 	}
 
 	public boolean isValueOfMethod(String methodName) {
@@ -50,13 +56,20 @@ public class JimpleCodeDetector {
 		return (methodName.equals(methodNameToSearch)) ? true : false;
 	}
 
+	
+	/**
+	 * Check for specialCases such as valueOf() Method from Wrapper Class
+	 * @param invokeExpr
+	 * @return
+	 */
+	
 	public boolean checkVirtualInvokeExpr(InvokeExpr invokeExpr) {
 
 		if (invokeExpr instanceof VirtualInvokeExpr) {
 
 			String methodName = invokeExpr.getMethod().getName();
 
-			if (!isWrapperClassType(invokeExpr) && isTypeValueMethod(methodName)) {
+			if (isWrapperClassType(invokeExpr) && isTypeValueMethod(methodName)) {
 				return true;
 			}
 
@@ -90,7 +103,7 @@ public class JimpleCodeDetector {
 		} else if (methodName.equals(LONGVALUE_METHOD)) {
 			return true;
 		} else if (methodName.equals(SHORTVALUE_METHOD)) {
-
+			return true;
 		}
 
 		return false;

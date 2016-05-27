@@ -3,8 +3,8 @@ package soot.toCIL.structures;
 public class Parameter extends Variable {
 	private int index;
 
-	public Parameter(int index, String variableName, String variableType, boolean isFinal) {
-		super(variableName, variableType, isFinal);
+	public Parameter(int index, String variableName, String variableType) {
+		super(variableName, variableType);
 		this.index = index;
 	}
 
@@ -20,11 +20,7 @@ public class Parameter extends Variable {
 		return variableType;
 	}
 
-	@Override
-	public boolean isFinal() {
-		// TODO Auto-generated method stub
-		return isFinal;
-	}
+
 
 	@Override
 	protected String getCILRepresentation() {

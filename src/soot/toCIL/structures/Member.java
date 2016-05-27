@@ -4,12 +4,10 @@ package soot.toCIL.structures;
 
 public class Member extends Variable{
 
-	private boolean isFinal;
 	private String cilField;
 	
-	public Member(String cilField, String variableName, String variableType, boolean isFinal, boolean isStatic) {
-		super(variableName, variableType, isFinal);
-		this.isFinal = isFinal;
+	public Member(String cilField, String variableName, String variableType) {
+		super(variableName, variableType);
 		this.cilField = cilField;
 	}
 
@@ -22,12 +20,6 @@ public class Member extends Variable{
 	public String getVariableType() {
 		return variableType;
 	}
-
-	@Override
-	public boolean isFinal() {
-		return isFinal;
-	}
-	
 	
 	public String getCILRepresentation() {
 		return cilField;

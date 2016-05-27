@@ -1,11 +1,7 @@
 package soot.toCIL;
 
-import net.sf.cglib.core.Local;
+
 import soot.Modifier;
-import soot.SootClass;
-import soot.SootField;
-import soot.Value;
-import soot.tagkit.AbstractHost;
 import soot.toCIL.structures.CILModifiers;
 
 public class CILModifierBuilder {

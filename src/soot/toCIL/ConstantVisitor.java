@@ -14,25 +14,12 @@ import soot.toCIL.structures.Type;
 
 public class ConstantVisitor extends AbstractConstantSwitch {
 	private StmtVisitor stmtV;
-	private Stmt origStmt;
-    private String instruction;
-    private String constantType;
 	
 	public ConstantVisitor(StmtVisitor stmtV) {
 		this.stmtV = stmtV;
 	}
 	
-	public void setOriginStmt(Stmt origStmt) {
-		this.origStmt = origStmt;
-	}
-	
-	public void setInstruction(String instruction) {
-    	this.instruction = instruction;
-    }
-	
-	public void setConstantTypeInString(String constantType) {
-		this.constantType = constantType;
-	}
+
 	
 	public void caseStringConstant(StringConstant s) {
 		Type type = Type.STRING;

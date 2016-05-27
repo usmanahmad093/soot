@@ -117,13 +117,12 @@ public class Method implements Body {
 		int index = 0;
 
 		for (Variable variable : allVariables) {
-			if (variable.isFinal() == v.isFinal) {
 				if (variable.getVariableName().equals(v.getVariableName())) {
 					if (variable.getVariableType().equals(v.getVariableType())) {
 						return variable;
 					}
 				}
-			}
+			
 
 			index++;
 		}

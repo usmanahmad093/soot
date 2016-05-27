@@ -4,8 +4,8 @@ public class LocalVariables extends Variable {
 
 	private boolean isThisRef;
 	
-	public LocalVariables(String variableName, String variableType, boolean isFinal) {
-		super(variableName, variableType, isFinal);
+	public LocalVariables(String variableName, String variableType) {
+		super(variableName, variableType);
 		this.isThisRef = true;
 	}
 
@@ -21,11 +21,7 @@ public class LocalVariables extends Variable {
 		return variableType;
 	}
 
-	@Override
-	public boolean isFinal() {
-		// TODO Auto-generated method stub
-		return isFinal;
-	}
+
 
 	@Override
 	protected String getCILRepresentation() {

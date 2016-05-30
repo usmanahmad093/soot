@@ -8,6 +8,7 @@ import polyglot.ext.param.types.Param;
 import soot.Local;
 import soot.PatchingChain;
 import soot.SootMethod;
+import soot.Trap;
 import soot.Type;
 import soot.Unit;
 import soot.Value;
@@ -32,6 +33,7 @@ public class Method implements Body {
 	private ArrayList<Instruction> allInstructions;
 	private SootMethod sootMethod;
 	private String startBody;
+	private Chain<Trap> allTraps;
 
 	public Method(SootMethod sootMethod, Class refClass) {
 		allVariables = new ArrayList<>();
@@ -46,6 +48,9 @@ public class Method implements Body {
 		return sootMethod.getDeclaringClass().getName();
 	}
 	
+	public void setTraps(Chain<Trap> allTraps) {
+		this.allTraps = allTraps;
+	}
 	public String getMethodName() {
 		return sootMethod.getName();
 	}
@@ -85,10 +90,18 @@ public class Method implements Body {
 	public void setInstructions(ArrayList<Instruction> allInstructions) {
 		this.allInstructions = allInstructions;
 	}
+	
+	public void setInstruction(int index, Instruction instruction) {
+		this.allInstructions.set(index, instruction);
+	}
 
 
 	public ArrayList<LocalVariables> getAllVariables() {
 		return allVariables;
+	}
+	
+	public void addLocalVariable(LocalVariables l) {
+		allVariables.add(l);
 	}
 
 	public ArrayList<Parameter> getAllParameters() {
@@ -145,6 +158,8 @@ public class Method implements Body {
 
 		return null;
 	}
+	
+
 	
 	public void InsertEditedLocalVariable(LocalVariables localVariable) {
 		allVariables.set(allVariables.indexOf(localVariable), localVariable);

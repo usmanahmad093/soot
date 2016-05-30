@@ -1,6 +1,5 @@
 package soot.toCIL;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +11,7 @@ import soot.PatchingChain;
 import soot.SootClass;
 import soot.SootField;
 import soot.SootMethod;
+import soot.Trap;
 import soot.Type;
 import soot.Unit;
 import soot.toCIL.instructions.AddInstruction;
@@ -62,7 +62,23 @@ public class CILDemoMode {
 		for (SootMethod method : clazz.getMethods()) {
 			if (method.isConcrete()) {
 				Body b = method.retrieveActiveBody();
-				System.out.println(b.toString());
+				System.out.println(method.getName());
+
+				Chain<Trap> allTraps = b.getTraps();
+				
+				if (allTraps.size() != 0) {
+					System.out.println(b.toString());
+				}
+
+				for (Trap t : allTraps) {
+					System.out.println("Beginunit: " + t.getBeginUnit().toString());
+					System.out.println("Endunit: " + t.getEndUnit().toString());
+					System.out.println("Exception: " + t.getException().toString());
+					System.out.println("Typ: " + t.getException().getType());
+					System.out.println("Handler: " + t.getHandlerUnit().toString());
+				}
+
+				//System.out.println(b.toString());
 			} else {
 				System.out.println(method.getSignature() + " " + method.getName() + " ();");
 			}
@@ -78,7 +94,6 @@ public class CILDemoMode {
 		return new CILDemoMode();
 	}
 
-	
 	/*
 	 * This Method fills the CIL Constructs into the StringBuilder
 	 */
@@ -128,7 +143,7 @@ public class CILDemoMode {
 	/*
 	 * This Method fills the cil attributes into the StringBuilder
 	 */
-	
+
 	private void printFields(Class c, StringBuilder sbForTextFile) {
 		// TODO Auto-generated method stub
 		ArrayList<Member> allMembers = c.getMembers();
@@ -159,7 +174,6 @@ public class CILDemoMode {
 	 */
 	public void transformJimpleToCIL(SootClass clazz) throws ClassNotFoundException {
 
-	
 		Chain<SootField> sootFields = clazz.getFields();
 		ArrayList<Member> allMembers = new ArrayList<>();
 
@@ -168,8 +182,9 @@ public class CILDemoMode {
 			String fieldName = sootField.getName();
 			String type = Converter.getInstance().getTypeInString(sootField.getType());
 
-			type = (CILModifierBuilder.isVolatile(sootField.getModifiers())? (type + " " + CILModifiers.VOLATILE): type);
-			
+			type = (CILModifierBuilder.isVolatile(sootField.getModifiers()) ? (type + " " + CILModifiers.VOLATILE)
+					: type);
+
 			Member member = new Member(cilFieldRepresenation, fieldName, type);
 			allMembers.add(member);
 		}
@@ -181,23 +196,25 @@ public class CILDemoMode {
 		for (SootMethod sootMethod : clazz.getMethods()) {
 
 			soot.toCIL.structures.Method cilMethod;
-		
 
 			cilMethod = new soot.toCIL.structures.Method(sootMethod, refClass);
-			
-		
+
 			List<Type> allTypes = sootMethod.getParameterTypes();
 			addParams(allTypes, cilMethod);
-			
+
 			String cilMethodHeader = CILMethodBuilder.buildCILMethodHeader(sootMethod, cilMethod.getAllParameters());
 			cilMethod.setStartBody(cilMethodHeader);
 
 			if (sootMethod.isConcrete()) {
 				Body body = sootMethod.retrieveActiveBody();
+				Chain<Trap> allTraps = body.getTraps();
+				cilMethod.setTraps(allTraps);
+
 				Chain<Local> allLocals = body.getLocals();
+				
 
 				addVariables(allLocals, cilMethod);
-				
+
 				transformAndAddInstructions(body.getUnits(), cilMethod);
 				detectMaxStack(cilMethod);
 			}
@@ -206,9 +223,9 @@ public class CILDemoMode {
 		}
 
 	}
-	
+
 	/*
-	 * This function detects how many Values should be maximal pushed into Stack  
+	 * This function detects how many Values should be maximal pushed into Stack
 	 */
 
 	private void detectMaxStack(soot.toCIL.structures.Method cilMethod) {
@@ -270,7 +287,6 @@ public class CILDemoMode {
 
 	}
 
-	
 	/*
 	 * Add Local Variables into the Collection
 	 */
@@ -286,7 +302,7 @@ public class CILDemoMode {
 			// TODO: wie kann ich den modfier einer lokalen Variable abrufen?
 			String name = l.getName();
 			if (l.getName().equals(SPECIALCASE)) {
-				name = "'" + name + "'"; 
+				name = "'" + name + "'";
 			}
 			LocalVariables var = new LocalVariables(name, type);
 			allVariables.add(var);
@@ -319,7 +335,7 @@ public class CILDemoMode {
 		ArrayList<LocalVariables> allVariables = cilMethod.getAllVariables();
 		StmtVisitor stmtV = new StmtVisitor(cilMethod);
 
-		// If Variables declared, add LocalsInit Instruction  
+		// If Variables declared, add LocalsInit Instruction
 		if (allVariables.size() != 0) {
 			LocalsInit initInstruction = new LocalsInit(allVariables);
 			stmtV.buildInstruction(initInstruction);

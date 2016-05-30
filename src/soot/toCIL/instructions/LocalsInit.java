@@ -25,9 +25,15 @@ public class LocalsInit implements Instruction {
 		this.localVariables = localVariables;
 	}
 	
+	public void addLocalVariable(LocalVariables localVar) {
+		this.localVariables.add(localVar);
+	}
+	
 	public ArrayList<LocalVariables> getLocalVariables() {
 		return localVariables;
 	}
+	
+	
 
 	@Override
 	public void setLabel(Label label) {

@@ -72,10 +72,16 @@ import soot.jimple.internal.JArrayRef;
 import soot.toCIL.instructions.Br;
 import soot.toCIL.instructions.Brfalse;
 import soot.toCIL.instructions.Brtrue;
+import soot.toCIL.instructions.Ceq;
+import soot.toCIL.instructions.Dup;
+import soot.toCIL.instructions.EndFinally;
+import soot.toCIL.instructions.EnterMonitor;
+import soot.toCIL.instructions.ExitMonitor;
 import soot.toCIL.instructions.Instruction;
 import soot.toCIL.instructions.Ldarg;
 import soot.toCIL.instructions.Ldfld;
 import soot.toCIL.instructions.Ldsfld;
+import soot.toCIL.instructions.Leave;
 import soot.toCIL.instructions.LoadInstruction;
 import soot.toCIL.instructions.LocalsInit;
 import soot.toCIL.instructions.Newobj;
@@ -104,6 +110,7 @@ public class StmtVisitor implements StmtSwitch {
 	private Method m;
 	private ArrayList<Instruction> allInstructions;
 	private soot.toCIL.structures.Constant constant;
+	private static final String cilSynchronizedLock = "'<>s_LockTaken0'";
 
 	public StmtVisitor(Method m) {
 		constantV = new ConstantVisitor(this);
@@ -411,7 +418,25 @@ public class StmtVisitor implements StmtSwitch {
 	@Override
 	public void caseEnterMonitorStmt(EnterMonitorStmt stmt) {
 		// TODO Auto-generated method stub
+		Value value = stmt.getOp();
 		
+		LocalVariables localVar = new LocalVariables(cilSynchronizedLock, "bool");
+		
+		m.addLocalVariable(localVar);
+		LocalsInit localsInit = (LocalsInit) m.getInstructions().get(0);
+		localsInit.addLocalVariable(localVar);
+		m.setInstruction(0, localsInit);
+
+		
+		LoadInstruction loadBoolean = new LoadInstruction(new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT, "0"), null, stmt);
+		StoreInstruction storeBoolean = new StoreInstruction(localVar, stmt);
+		LoadInstruction loadObject = BuildLoadInstruction(value, stmt);
+		EnterMonitor enterMonitorInstr = new EnterMonitor(stmt);
+		
+		buildInstruction(loadBoolean);
+		buildInstruction(storeBoolean);
+		buildInstruction(loadObject);
+		buildInstruction(enterMonitorInstr);
 
 	}
 
@@ -419,7 +444,29 @@ public class StmtVisitor implements StmtSwitch {
 	@Override
 	public void caseExitMonitorStmt(ExitMonitorStmt stmt) {
 		// TODO Auto-generated method stub
-
+		Value value = stmt.getOp();
+		
+		LocalVariables localVar = new LocalVariables(cilSynchronizedLock, "bool");
+		Variable variable = m.searchforVariableAndGetIt(localVar);
+		
+		Leave leaveInstr = new Leave(null, stmt); //TODO Targetlabel später übergeben
+		LoadInstruction loadInstr = new LoadInstruction(null, variable, stmt);
+		LoadInstruction loadConstant = new LoadInstruction(new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT, "0"), null, stmt);
+		Ceq ceqInstr = new Ceq(stmt);
+		Brtrue brtrueInstr = new Brtrue(null, stmt); //TODO: Später
+		LoadInstruction loadObject = BuildLoadInstruction(value, stmt);
+		ExitMonitor exitMonitorStmt = new ExitMonitor(stmt);
+		EndFinally endFinally = new EndFinally(stmt);
+		
+		buildInstruction(leaveInstr);
+		buildInstruction(loadInstr);
+		buildInstruction(loadConstant);
+		buildInstruction(ceqInstr);
+		buildInstruction(brtrueInstr);
+		buildInstruction(loadObject);
+		buildInstruction(exitMonitorStmt);
+		buildInstruction(endFinally);
+		
 	}
 
 	@Override

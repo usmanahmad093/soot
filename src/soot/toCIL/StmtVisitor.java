@@ -164,6 +164,7 @@ public class StmtVisitor implements StmtSwitch {
 	}
 
 	private Stfld buildStfldInstruction(Value v, Stmt stmt) {
+		
 		Stfld stfld = null;
 		String returnType = Converter.getInstance().getTypeInString(v.getType());
 		SootField field = ((InstanceFieldRef) v).getField();
@@ -410,6 +411,7 @@ public class StmtVisitor implements StmtSwitch {
 	@Override
 	public void caseEnterMonitorStmt(EnterMonitorStmt stmt) {
 		// TODO Auto-generated method stub
+		
 
 	}
 

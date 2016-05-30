@@ -715,6 +715,7 @@ class StmtVisitor implements StmtSwitch {
 	}
 	
 	private Insn buildGotoInsn(Stmt target) {
+		
 		if (target == null)
 			throw new RuntimeException("Cannot jump to a NULL target");
 		

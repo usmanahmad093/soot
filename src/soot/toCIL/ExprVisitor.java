@@ -185,11 +185,14 @@ public class ExprVisitor implements ExprSwitch {
 
 	@Override
 	public void caseCmpExpr(CmpExpr v) {
-		System.out.println("CmpExpr");
+		Value operand1 = v.getOp1();
+		Value operand2 = v.getOp2();
 		
-
+		LoadInstruction loadInstr = stmtV.BuildLoadInstruction(operand1, originStmt);
+		LoadInstruction loadInstr2 = stmtV.BuildLoadInstruction(operand2, originStmt);
+		Cgt cgtInstr = new Cgt(originStmt);
 		
-		
+		//TODO: Später
 
 	}
 
@@ -217,14 +220,23 @@ public class ExprVisitor implements ExprSwitch {
 		Value operand1 = v.getOp1();
 		Value operand2 = v.getOp2();
 		
+		soot.toCIL.structures.Constant constant = new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT, "-1");
+		
 		LoadInstruction loadOperand1 = stmtV.BuildLoadInstruction(operand1, originStmt);
 		LoadInstruction loadOperand2 = stmtV.BuildLoadInstruction(operand2, originStmt);
+		LoadInstruction loadConstant = new LoadInstruction(constant, null, originStmt);
+		Mul mulInstr = new Mul(originStmt);
+		
 		
 		Clt cltInstr = new Clt(originStmt);
 		
 		stmtV.buildInstruction(loadOperand1);
 		stmtV.buildInstruction(loadOperand2);
 		stmtV.buildInstruction(cltInstr);
+		stmtV.buildInstruction(loadConstant);
+		stmtV.buildInstruction(mulInstr);
+		
+		
 	}
 
 	@Override
@@ -384,7 +396,6 @@ public class ExprVisitor implements ExprSwitch {
 		stmtV.buildInstruction(loadInstruction1);
 		stmtV.buildInstruction(loadInstruction2);
 		stmtV.buildInstruction(orInstruction);
-
 	}
 
 	@Override
@@ -500,6 +511,8 @@ public class ExprVisitor implements ExprSwitch {
 		List<Value> allArguments = v.getArgs();
 		ArrayList<String> allArgumentTypes = new ArrayList<>();
 
+		Value leftValue = v.getBase();
+		stmtV.buildInstruction(stmtV.BuildLoadInstruction(leftValue, originStmt));
 		for (Value value : allArguments) {
 			LoadInstruction loadInstr = stmtV.BuildLoadInstruction(value, originStmt);
 			stmtV.buildInstruction(loadInstr);
@@ -605,6 +618,11 @@ public class ExprVisitor implements ExprSwitch {
 
 	@Override
 	public void caseVirtualInvokeExpr(VirtualInvokeExpr v) {
+		
+		if (m.getMethodName().equals("TestClassesWithInterfaces")) {
+			int debug = 0;
+		}
+		
 		Value leftValue = v.getBase();
 
 		String methodName = v.getMethod().getName();

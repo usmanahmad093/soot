@@ -66,9 +66,9 @@ public class CILDemoMode {
 
 				Chain<Trap> allTraps = b.getTraps();
 				
-				if (allTraps.size() != 0) {
+				//if (allTraps.size() != 0) {
 					System.out.println(b.toString());
-				}
+				//}
 
 				for (Trap t : allTraps) {
 					System.out.println("Beginunit: " + t.getBeginUnit().toString());
@@ -76,6 +76,7 @@ public class CILDemoMode {
 					System.out.println("Exception: " + t.getException().toString());
 					System.out.println("Typ: " + t.getException().getType());
 					System.out.println("Handler: " + t.getHandlerUnit().toString());
+					System.out.println("");
 				}
 
 				//System.out.println(b.toString());

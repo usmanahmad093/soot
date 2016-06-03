@@ -92,6 +92,7 @@ import soot.toCIL.instructions.Ldarg;
 import soot.toCIL.instructions.Ldlen;
 import soot.toCIL.instructions.LoadInstruction;
 import soot.toCIL.instructions.Mul;
+import soot.toCIL.instructions.Neg;
 import soot.toCIL.instructions.Newarr;
 import soot.toCIL.instructions.Newobj;
 import soot.toCIL.instructions.Or;
@@ -729,15 +730,17 @@ public class ExprVisitor implements ExprSwitch {
 	}
 
 	/*
-	 * TODO: How to Invoke This Case?
+	 * TODO: I Can't Invoke This Case!!
 	 */
 	@Override
 	public void caseNegExpr(NegExpr v) {
 		Value source = v.getOp();
-		Type type = source.getType();
-		//String cilType = Converter.getInstance().getTypeInString(type);
-
 		
+		LoadInstruction loadInstr = stmtV.BuildLoadInstruction(source, originStmt);
+		Neg negInstr = new Neg(originStmt);
+		
+		stmtV.buildInstruction(loadInstr);
+		stmtV.buildInstruction(negInstr);
 
 	}
 

@@ -365,6 +365,9 @@ public class StmtVisitor implements StmtSwitch {
 			ldargInstruction = new Ldarg(0, stmt);
 		} else if (rhs instanceof ParameterRef) {
 			ldargInstruction = BuildLdargInstruction(rhs, stmt);
+		} else if (rhs instanceof CaughtExceptionRef) {
+			CaughtExceptionRef caughtEx = (CaughtExceptionRef) rhs;
+	
 		}
 
 		try {
@@ -575,6 +578,7 @@ public class StmtVisitor implements StmtSwitch {
 	@Override
 	public void caseThrowStmt(ThrowStmt stmt) {
 		// TODO Auto-generated method stub
+		
 		Value exception = stmt.getOp();
 
 		LoadInstruction loadException = BuildLoadInstruction(exception, stmt);

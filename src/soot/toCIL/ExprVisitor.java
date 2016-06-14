@@ -693,11 +693,12 @@ public class ExprVisitor implements ExprSwitch {
 	//TODO: Testing
 	@Override
 	public void caseNewArrayExpr(NewArrayExpr v) {
+		final int oneDimensional = 1;
 		Value arraySize = v.getSize();
 		String typeInString = Converter.getInstance().getTypeInString(v.getType());
 		soot.toCIL.structures.Type type = Converter.getInstance().getTypeInEnum(v.getType());
 		LoadInstruction loadInstr = stmtV.BuildLoadInstruction(arraySize, originStmt);
-		Newarr newarrInstr = new Newarr(originStmt, type, typeInString);
+		Newarr newarrInstr = new Newarr(originStmt, type, typeInString, oneDimensional);
 		
 		stmtV.buildInstruction(loadInstr);
 		stmtV.buildInstruction(newarrInstr);
@@ -705,8 +706,39 @@ public class ExprVisitor implements ExprSwitch {
 
 	@Override
 	public void caseNewMultiArrayExpr(NewMultiArrayExpr v) {
-		// TODO Auto-generated method stub
-
+		final int lastDimension = 1;
+		List<Value> arraySize = v.getSizes();
+		Type sootType = v.getType();
+		int arrayDimensions = v.getSizeCount();
+		String typeInString = Converter.getInstance().getTypeInString(v.getType());
+		soot.toCIL.structures.Type type = Converter.getInstance().getTypeInEnum(v.getType());
+		AssignStmt assignStmt = (AssignStmt)originStmt;
+		Value multiArray = assignStmt.getLeftOp();
+		
+		soot.toCIL.instructions.StoreInstruction storeIntoArray = null;
+		try {
+			storeIntoArray = stmtV.BuildStoreInstruction(multiArray, originStmt);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		for(int currentDimension = arrayDimensions - 1; currentDimension >= 0; currentDimension--) {
+			
+			LoadInstruction currentArraySize = stmtV.BuildLoadInstruction(null, originStmt); //TODO: ArraySize
+			Newarr newArrInstr = new Newarr(originStmt, type, typeInString, currentDimension);
+			
+			stmtV.buildInstruction(currentArraySize);
+			stmtV.buildInstruction(newArrInstr);
+			
+			if (currentDimension != lastDimension) {
+				stmtV.buildInstruction(storeIntoArray);
+				stmtV.buildInstruction(stmtV.BuildLoadInstruction(multiArray, originStmt));
+			} else {
+				
+			}
+		}
 	}
 
 	@Override

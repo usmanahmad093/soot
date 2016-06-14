@@ -1,9 +1,5 @@
 package soot.toCIL.instructions;
 
-
-
-
-
 import soot.jimple.Stmt;
 import soot.toCIL.Converter;
 import soot.toCIL.structures.Constant;
@@ -15,56 +11,113 @@ public class Newarr implements Instruction {
 	private Label label;
 	private Type type;
 	private String typeInString;
+	private int dimensions;
 
-	public Newarr(Stmt stmt, Type type, String typeInString) {
+	public Newarr(Stmt stmt, Type type, String typeInString, int dimensions) {
 		final int REMOVEBRACKETS = 2;
 		final int REMOVECLASSPATTERN = 6;
-		
+
 		this.stmt = stmt;
 		this.type = type;
-		
-		//Remove '[]':
-		
+		this.dimensions = dimensions;
+
+		// Remove '[]':
+
 		if (Converter.getInstance().isClassType()) {
-		  typeInString = typeInString.substring(REMOVECLASSPATTERN, typeInString.length() - REMOVEBRACKETS);
+			typeInString = typeInString.substring(REMOVECLASSPATTERN, typeInString.length() - REMOVEBRACKETS);
 		}
-		  
-	    this.typeInString = typeInString;
+
+		this.typeInString = typeInString;
 	}
 
 	@Override
 	public String getInstruction() {
+		final int lastDimension = 0;
+		String brackets = "";
+
+		// concat brackets
+		for (int i = 0; i < dimensions; i++) {
+			brackets += "[]";
+		}
 
 		switch (type) {
 		case INT:
-			return "newarr [mscorlib] System.Int32";
+
+			if (dimensions == lastDimension) {
+				return "newarr [mscorlib] System.Int32";
+			} else {
+				return "newarr int32" + brackets;
+			}
 
 		case DOUBLE:
-			return "newarr [mscorlib]System.Double";
+
+			if (dimensions == lastDimension) {
+				return "newarr [mscorlib]System.Double";
+			} else {
+				return "newarr float64" + brackets;
+			}
 
 		case FLOAT:
-			return "newarr [mscorlib]System.Single";
+
+			if (dimensions == lastDimension) {
+				return "newarr [mscorlib]System.Single";
+			} else {
+				return "newarr float32" + brackets;
+			}
 
 		case LONG:
-			return "newarr [mscorlib]System.Int64";
+
+			if (dimensions == lastDimension) {
+				return "newarr [mscorlib]System.Int64";
+			} else {
+				return "newarr int64" + brackets;
+			}
 
 		case STRING:
-			return "newarr [mscorlib]System.String";
+
+			if (dimensions == lastDimension) {
+				return "newarr [mscorlib]System.String";
+			} else {
+				return "newarr string" + brackets;
+			}
 
 		case BOOLEAN:
-			return "newarr [mscorlib]System.Boolean";
+
+			if (dimensions == lastDimension) {
+				return "newarr [mscorlib]System.Boolean";
+			} else {
+				return "newarr bool" + brackets;
+			}
 
 		case BYTE:
-			return "newarr [mscorlib]System.Byte";
+
+			if (dimensions == lastDimension) {
+				return "newarr [mscorlib]System.Byte";
+			} else {
+				return "newarr int8" + brackets;
+			}
 
 		case CHAR:
-			return "newarr [mscorlib]System.Char";
+			if (dimensions == lastDimension) {
+				return "newarr [mscorlib]System.Char";
+			} else {
+				return "newarr char" + brackets;
+			}
 
 		case SHORT:
-			return "newarr [mscorlib]System.Int16";
+
+			if (dimensions == lastDimension) {
+				return "newarr [mscorlib]System.Int16";
+			} else {
+				return "newarr int16" + brackets;
+			}
 
 		default:
-			return "newarr " + typeInString;
+			if (dimensions == lastDimension) {
+				return "newarr " + typeInString;
+			} else {
+				return "newarr " + typeInString + brackets;
+			}
 		}
 	}
 

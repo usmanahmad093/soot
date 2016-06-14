@@ -367,6 +367,7 @@ public class StmtVisitor implements StmtSwitch {
 			ldargInstruction = BuildLdargInstruction(rhs, stmt);
 		} else if (rhs instanceof CaughtExceptionRef) {
 			String classType = Converter.getInstance().getTypeInString(lhs.getType());
+			classType = classType.substring(5, classType.length()); //Cut the pattern "class"
 			
 			
 			BeginCatchSection beginCatchInstr = new BeginCatchSection(stmt, classType);
@@ -450,6 +451,8 @@ public class StmtVisitor implements StmtSwitch {
 	@Override
 	public void caseEnterMonitorStmt(EnterMonitorStmt stmt) {
 		Value object = stmt.getOp();
+		
+		LoadInstruction loadObject = BuildLoadInstruction(object, stmt);
 
 		Dup dupInstr = new Dup(stmt);
 		StoreInstruction storeInstr = null;
@@ -462,6 +465,7 @@ public class StmtVisitor implements StmtSwitch {
 
 		EnterMonitor enterMonitorStmt = new EnterMonitor(stmt);
 
+		buildInstruction(loadObject);
 		buildInstruction(dupInstr);
 		buildInstruction(storeInstr);
 		buildInstruction(enterMonitorStmt);
@@ -473,11 +477,9 @@ public class StmtVisitor implements StmtSwitch {
 		Value value = stmt.getOp();
 		LoadInstruction loadInstr = BuildLoadInstruction(value, stmt);
 		ExitMonitor exitMonitor = new ExitMonitor(stmt);
-		EndFinally endFinallyInstr = new EndFinally(stmt);
 
 		buildInstruction(loadInstr);
 		buildInstruction(exitMonitor);
-		buildInstruction(endFinallyInstr);
 	}
 
 	@Override

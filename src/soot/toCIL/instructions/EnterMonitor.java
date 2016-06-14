@@ -33,6 +33,6 @@ public class EnterMonitor implements Instruction {
 	@Override
 	public String getInstruction() {
 		// TODO Auto-generated method stub
-		return "call void [mscorlib]System.Threading.Monitor::Enter(object, bool&) ";
+		return "call void [mscorlib]System.Threading.Monitor::Enter(object) ";
 	}
 }

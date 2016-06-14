@@ -4,7 +4,7 @@ public class Label {
 	private String labelName;
 	
 	public Label() {
-		
+		labelName = "";
 	}
 	
 	public Label(String labelName) {

@@ -22,6 +22,8 @@ public class Converter {
 	private static final String INT16 = "int16";
 	private static final String VOID = "void";
 	private static final String OBJECT_CLASS = "[mscorlib]System.Object";
+	private static final String INDEXOUTOFBOUNDSEXCEP = "[mscorlib]System.IndexOutOfRangeException";
+
 	
 	
 	private boolean isClassType = false;
@@ -77,7 +79,9 @@ public class Converter {
 				return INT8;
 			} else if (refType.getClassName().equals(Object.class.getName())) {
 				return OBJECT_CLASS;
-			}
+			} else if (refType.getClassName().equals(IndexOutOfBoundsException.class.getName())) {
+				return INDEXOUTOFBOUNDSEXCEP;
+			} 
 		} else if (askedType instanceof soot.IntType) {
 			return INT32;
 		} else if (askedType instanceof soot.BooleanType) {

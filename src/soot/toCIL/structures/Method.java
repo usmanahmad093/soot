@@ -13,6 +13,7 @@ import soot.Type;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.ParameterRef;
+import soot.jimple.Stmt;
 import soot.toCIL.Converter;
 import soot.toCIL.LabelAssigner;
 import soot.toCIL.StmtVisitor;
@@ -33,12 +34,15 @@ public class Method implements Body {
 	private ArrayList<Instruction> allInstructions;
 	private SootMethod sootMethod;
 	private String startBody;
-	private Chain<Trap> allTraps;
+	private HashMap<Stmt, Stmt> trapsBeginStmt;
+	private HashMap<Stmt, Stmt> trapsEndStmt;
 
 	public Method(SootMethod sootMethod, Class refClass) {
 		allVariables = new ArrayList<>();
 		allParameters = new ArrayList<>();
 		allInstructions = new ArrayList<>();
+		trapsBeginStmt = new HashMap<>();
+		trapsEndStmt = new HashMap<>();
 		this.sootMethod = sootMethod;
 		startBody = "";
 	}
@@ -49,8 +53,14 @@ public class Method implements Body {
 	}
 	
 	public void setTraps(Chain<Trap> allTraps) {
-		this.allTraps = allTraps;
+		for(Trap t: allTraps) {
+			this.trapsBeginStmt.put((Stmt) t.getBeginUnit(), (Stmt) t.getBeginUnit());
+			this.trapsEndStmt.put((Stmt) t.getEndUnit(), (Stmt) t.getEndUnit());
+		}
 	}
+	
+	
+	
 	public String getMethodName() {
 		return sootMethod.getName();
 	}
@@ -89,6 +99,10 @@ public class Method implements Body {
 
 	public void setInstructions(ArrayList<Instruction> allInstructions) {
 		this.allInstructions = allInstructions;
+	}
+	
+	public void addInstruction(Instruction instruction) {
+		this.allInstructions.add(instruction);
 	}
 	
 	public void setInstruction(int index, Instruction instruction) {
@@ -159,6 +173,14 @@ public class Method implements Body {
 		return null;
 	}
 	
+	
+	public Stmt getTrapBeginUnitByStmt(Stmt stmt) {	
+		return trapsBeginStmt.get(stmt);
+	}
+	
+	public Stmt getTrapEndUnitByStmt(Stmt stmt) {
+		return trapsEndStmt.get(stmt);
+	}
 
 	
 	public void InsertEditedLocalVariable(LocalVariables localVariable) {

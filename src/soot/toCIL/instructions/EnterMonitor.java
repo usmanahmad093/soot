@@ -3,21 +3,13 @@ package soot.toCIL.instructions;
 import soot.jimple.Stmt;
 import soot.toCIL.structures.Label;
 
-public class Br implements Instruction {
-
-	private String targetLabel;
+public class EnterMonitor implements Instruction {
 	private Stmt stmt;
 	private Label label;
+	
 
-	public Br(String targetLabel, Stmt stmt) {
-		this.targetLabel = targetLabel;
+	public EnterMonitor(Stmt stmt) {
 		this.stmt = stmt;
-	}
-
-	@Override
-	public String getInstruction() {
-		// TODO Auto-generated method stub
-		return "br " + targetLabel;
 	}
 
 	@Override
@@ -38,4 +30,9 @@ public class Br implements Instruction {
 		return label.getLabel() + ": ";
 	}
 
+	@Override
+	public String getInstruction() {
+		// TODO Auto-generated method stub
+		return "call void [mscorlib]System.Threading.Monitor::Enter(object, bool&) ";
+	}
 }

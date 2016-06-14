@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.sun.net.ssl.internal.www.protocol.https.Handler;
+
+import javassist.compiler.ast.Expr;
 import soot.Body;
 import soot.Local;
 import soot.PatchingChain;
@@ -14,6 +17,10 @@ import soot.SootMethod;
 import soot.Trap;
 import soot.Type;
 import soot.Unit;
+import soot.jimple.CaughtExceptionRef;
+import soot.jimple.Stmt;
+import soot.jimple.internal.JIdentityStmt;
+import soot.jimple.toolkits.thread.mhp.stmt.BeginStmt;
 import soot.toCIL.instructions.AddInstruction;
 import soot.toCIL.instructions.And;
 import soot.toCIL.instructions.Ceq;
@@ -35,6 +42,8 @@ import soot.toCIL.instructions.ShrUn;
 import soot.toCIL.instructions.StoreInstruction;
 import soot.toCIL.instructions.Sub;
 import soot.toCIL.instructions.Xor;
+import soot.toCIL.instructions.trysection.BeginTrySection;
+import soot.toCIL.instructions.trysection.EndTrySection;
 import soot.toCIL.structures.CILModifiers;
 import soot.toCIL.structures.Class;
 import soot.toCIL.structures.LocalVariables;
@@ -50,6 +59,7 @@ public class CILDemoMode {
 	private Class refClass;
 	int hashmapSize = 0;
 	public static final String STRANGE_TYPE = "byte";
+	
 
 	int test;
 
@@ -76,10 +86,16 @@ public class CILDemoMode {
 					System.out.println("Exception: " + t.getException().toString());
 					System.out.println("Typ: " + t.getException().getType());
 					System.out.println("Handler: " + t.getHandlerUnit().toString());
+					
+					JIdentityStmt u = (JIdentityStmt) t.getHandlerUnit();
+					CaughtExceptionRef ref = (CaughtExceptionRef) u.getRightOp();
+					
+					
+					
+				
 					System.out.println("");
 				}
 
-				//System.out.println(b.toString());
 			} else {
 				System.out.println(method.getSignature() + " " + method.getName() + " ();");
 			}
@@ -197,6 +213,8 @@ public class CILDemoMode {
 		for (SootMethod sootMethod : clazz.getMethods()) {
 
 			soot.toCIL.structures.Method cilMethod;
+			
+			
 
 			cilMethod = new soot.toCIL.structures.Method(sootMethod, refClass);
 
@@ -216,7 +234,7 @@ public class CILDemoMode {
 
 				addVariables(allLocals, cilMethod);
 
-				transformAndAddInstructions(body.getUnits(), cilMethod);
+				transformAndAddInstructions(body.getUnits(), cilMethod, allTraps);
 				detectMaxStack(cilMethod);
 			}
 
@@ -332,10 +350,11 @@ public class CILDemoMode {
 		cilMethod.setParameters(allParameters);
 	}
 
-	private void transformAndAddInstructions(PatchingChain<Unit> allUnits, soot.toCIL.structures.Method cilMethod) {
+	private void transformAndAddInstructions(PatchingChain<Unit> allUnits, soot.toCIL.structures.Method cilMethod, Chain<Trap> allTraps) {
 		ArrayList<LocalVariables> allVariables = cilMethod.getAllVariables();
 		StmtVisitor stmtV = new StmtVisitor(cilMethod);
-
+		final boolean successfull = true;
+		
 		// If Variables declared, add LocalsInit Instruction
 		if (allVariables.size() != 0) {
 			LocalsInit initInstruction = new LocalsInit(allVariables);
@@ -343,7 +362,22 @@ public class CILDemoMode {
 		}
 
 		for (Unit u : allUnits) {
+			
+			Stmt stmt = (Stmt) u;
+			
+			
+			
+			if (cilMethod.getTrapBeginUnitByStmt(stmt) != null) {
+				BeginTrySection tryInstruction = new BeginTrySection(stmt);
+				cilMethod.addInstruction(tryInstruction);
+			}
+			
 			u.apply(stmtV);
+			
+			if (cilMethod.getTrapEndUnitByStmt(stmt) != null) {
+				EndTrySection endTrySection = new EndTrySection(stmt);
+				cilMethod.addInstruction(endTrySection);
+			}
 		}
 
 		ArrayList<Instruction> allInstructions = stmtV.getInstructions();
@@ -351,5 +385,7 @@ public class CILDemoMode {
 		allInstructions = LabelAssigner.getInstance().AssignLabelsToInstructions(allInstructions);
 		cilMethod.setInstructions(allInstructions);
 	}
+
+	
 
 }

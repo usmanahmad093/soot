@@ -69,7 +69,6 @@ import soot.jimple.ThisRef;
 import soot.jimple.ThrowStmt;
 import soot.jimple.VirtualInvokeExpr;
 import soot.jimple.internal.JArrayRef;
-import soot.toCIL.instructions.Br;
 import soot.toCIL.instructions.Brfalse;
 import soot.toCIL.instructions.Brtrue;
 import soot.toCIL.instructions.Ceq;
@@ -81,7 +80,6 @@ import soot.toCIL.instructions.Instruction;
 import soot.toCIL.instructions.Ldarg;
 import soot.toCIL.instructions.Ldfld;
 import soot.toCIL.instructions.Ldsfld;
-import soot.toCIL.instructions.Leave;
 import soot.toCIL.instructions.LoadInstruction;
 import soot.toCIL.instructions.LocalsInit;
 import soot.toCIL.instructions.Newobj;
@@ -94,7 +92,11 @@ import soot.toCIL.instructions.StoreInstruction;
 import soot.toCIL.instructions.Stsfld;
 import soot.toCIL.instructions.Throw;
 import soot.toCIL.instructions.Volatile;
+import soot.toCIL.instructions.catchsection.BeginCatchSection;
+import soot.toCIL.instructions.catchsection.EndCatchSection;
 import soot.toCIL.instructions.jumps.Beq;
+import soot.toCIL.instructions.jumps.Br;
+import soot.toCIL.instructions.jumps.Leave;
 import soot.toCIL.structures.CILModifiers;
 import soot.toCIL.structures.Class;
 import soot.toCIL.structures.Label;
@@ -110,7 +112,7 @@ public class StmtVisitor implements StmtSwitch {
 	private Method m;
 	private ArrayList<Instruction> allInstructions;
 	private soot.toCIL.structures.Constant constant;
-	private static final String cilSynchronizedLock = "'<>s_LockTaken0'";
+	private EndCatchSection endcatchInstr = null;
 
 	public StmtVisitor(Method m) {
 		constantV = new ConstantVisitor(this);
@@ -171,7 +173,7 @@ public class StmtVisitor implements StmtSwitch {
 	}
 
 	private Stfld buildStfldInstruction(Value v, Stmt stmt) {
-		
+
 		Stfld stfld = null;
 		String returnType = Converter.getInstance().getTypeInString(v.getType());
 		SootField field = ((InstanceFieldRef) v).getField();
@@ -262,10 +264,8 @@ public class StmtVisitor implements StmtSwitch {
 
 		Value lhs = stmt.getLeftOp();
 		Value rhs = stmt.getRightOp();
-		
-		if (m.getMethodName().equals("testIfStmt")) {
-			int debug = 0;
-		}
+
+	
 
 		if (!(rhs instanceof NewExpr)) {
 			if (lhs instanceof Local || lhs instanceof Constant) {
@@ -312,7 +312,7 @@ public class StmtVisitor implements StmtSwitch {
 
 	public void buildRightSide(Value rhs, AssignStmt stmt) {
 		exprV.setOriginStmt(stmt);
-		
+
 		if (rhs instanceof Local || rhs instanceof Constant) {
 			buildInstruction(BuildLoadInstruction(rhs, stmt));
 		} else if (rhs instanceof InvokeExpr) {
@@ -366,10 +366,15 @@ public class StmtVisitor implements StmtSwitch {
 		} else if (rhs instanceof ParameterRef) {
 			ldargInstruction = BuildLdargInstruction(rhs, stmt);
 		} else if (rhs instanceof CaughtExceptionRef) {
-			CaughtExceptionRef caughtEx = (CaughtExceptionRef) rhs;
-	
+			String classType = Converter.getInstance().getTypeInString(lhs.getType());
+			
+			
+			BeginCatchSection beginCatchInstr = new BeginCatchSection(stmt, classType);
+			endcatchInstr = new EndCatchSection(null);
+			buildInstruction(beginCatchInstr);
 		}
-
+		
+		
 		try {
 			storeInstr = BuildStoreInstruction(lhs, stmt);
 			buildInstruction(ldargInstruction);
@@ -378,6 +383,30 @@ public class StmtVisitor implements StmtSwitch {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+		
+		/*
+		if (!(rhs instanceof CaughtExceptionRef)) {
+
+			try {
+				storeInstr = BuildStoreInstruction(lhs, stmt);
+				buildInstruction(ldargInstruction);
+				buildInstruction(storeInstr);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			
+
+			String classType = Converter.getInstance().getTypeInString(lhs.getType());
+			
+			
+			BeginCatchSection beginCatchInstr = new BeginCatchSection(stmt, classType);
+			endcatchInstr = new EndCatchSection(null);
+			buildInstruction(beginCatchInstr);
+		}
+		*/
 	}
 
 	private Ldarg BuildLdargInstruction(Value v, Stmt stmt) {
@@ -420,65 +449,50 @@ public class StmtVisitor implements StmtSwitch {
 	// TODO: Thread Synchronize
 	@Override
 	public void caseEnterMonitorStmt(EnterMonitorStmt stmt) {
-		// TODO Auto-generated method stub
-		Value value = stmt.getOp();
-		
-		LocalVariables localVar = new LocalVariables(cilSynchronizedLock, "bool");
-		
-		m.addLocalVariable(localVar);
-		LocalsInit localsInit = (LocalsInit) m.getInstructions().get(0);
-		localsInit.addLocalVariable(localVar);
-		m.setInstruction(0, localsInit);
+		Value object = stmt.getOp();
 
-		
-		LoadInstruction loadBoolean = new LoadInstruction(new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT, "0"), null, stmt);
-		StoreInstruction storeBoolean = new StoreInstruction(localVar, stmt);
-		LoadInstruction loadObject = BuildLoadInstruction(value, stmt);
-		EnterMonitor enterMonitorInstr = new EnterMonitor(stmt);
-		
-		buildInstruction(loadBoolean);
-		buildInstruction(storeBoolean);
-		buildInstruction(loadObject);
-		buildInstruction(enterMonitorInstr);
+		Dup dupInstr = new Dup(stmt);
+		StoreInstruction storeInstr = null;
+		try {
+			storeInstr = BuildStoreInstruction(object, stmt);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
+		EnterMonitor enterMonitorStmt = new EnterMonitor(stmt);
+
+		buildInstruction(dupInstr);
+		buildInstruction(storeInstr);
+		buildInstruction(enterMonitorStmt);
 	}
 
-	// TODO: Thread Synchronize
 	@Override
 	public void caseExitMonitorStmt(ExitMonitorStmt stmt) {
 		// TODO Auto-generated method stub
 		Value value = stmt.getOp();
-		
-		LocalVariables localVar = new LocalVariables(cilSynchronizedLock, "bool");
-		Variable variable = m.searchforVariableAndGetIt(localVar);
-		
-		Leave leaveInstr = new Leave(null, stmt); //TODO Targetlabel später übergeben
-		LoadInstruction loadInstr = new LoadInstruction(null, variable, stmt);
-		LoadInstruction loadConstant = new LoadInstruction(new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT, "0"), null, stmt);
-		Ceq ceqInstr = new Ceq(stmt);
-		Brtrue brtrueInstr = new Brtrue(null, stmt); //TODO: Später
-		LoadInstruction loadObject = BuildLoadInstruction(value, stmt);
-		ExitMonitor exitMonitorStmt = new ExitMonitor(stmt);
-		EndFinally endFinally = new EndFinally(stmt);
-		
-		buildInstruction(leaveInstr);
+		LoadInstruction loadInstr = BuildLoadInstruction(value, stmt);
+		ExitMonitor exitMonitor = new ExitMonitor(stmt);
+		EndFinally endFinallyInstr = new EndFinally(stmt);
+
 		buildInstruction(loadInstr);
-		buildInstruction(loadConstant);
-		buildInstruction(ceqInstr);
-		buildInstruction(brtrueInstr);
-		buildInstruction(loadObject);
-		buildInstruction(exitMonitorStmt);
-		buildInstruction(endFinally);
-		
+		buildInstruction(exitMonitor);
+		buildInstruction(endFinallyInstr);
 	}
 
 	@Override
 	public void caseGotoStmt(GotoStmt stmt) {
-		// TODO Auto-generated method stub
 		Stmt target = (Stmt) stmt.getTarget();
 		Label targetLabel = LabelAssigner.getInstance().CreateTargetLabel(target);
-		Br brInstruction = new Br(targetLabel.getLabel(), stmt);
-		buildInstruction(brInstruction);
+
+		if (m.getTrapEndUnitByStmt(stmt) != null) {
+			Leave leaveInstruction = new Leave(targetLabel.getLabel(), stmt);
+			buildInstruction(leaveInstruction);
+		} else {
+			Br brInstruction = new Br(targetLabel.getLabel(), stmt);
+			buildInstruction(brInstruction);
+		}
+
 	}
 
 	@Override
@@ -577,15 +591,16 @@ public class StmtVisitor implements StmtSwitch {
 	// TODO:
 	@Override
 	public void caseThrowStmt(ThrowStmt stmt) {
-		// TODO Auto-generated method stub
-		
+
+		endcatchInstr = new EndCatchSection(stmt);
 		Value exception = stmt.getOp();
 
 		LoadInstruction loadException = BuildLoadInstruction(exception, stmt);
-		Throw throwInstr = new Throw(stmt);
+		Throw throwInstruction = new Throw(stmt);
 
 		buildInstruction(loadException);
-		buildInstruction(throwInstr);
+		buildInstruction(throwInstruction);
+		buildInstruction(endcatchInstr);
 	}
 
 	@Override

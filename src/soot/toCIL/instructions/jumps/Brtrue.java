@@ -1,6 +1,7 @@
-package soot.toCIL.instructions;
+package soot.toCIL.instructions.jumps;
 
 import soot.jimple.Stmt;
+import soot.toCIL.instructions.Instruction;
 import soot.toCIL.structures.Label;
 
 public class Brtrue implements Instruction{

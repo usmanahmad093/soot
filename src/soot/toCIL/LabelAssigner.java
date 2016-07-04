@@ -79,32 +79,14 @@ public class LabelAssigner {
 	}
 
 	public Instruction AssignLabelToInstruction(Instruction instr) {
-
-		Label tmpTargetLabel = new Label();
 		Label label = new Label();
 
-		Stmt stmt = instr.getStmt();
-
-		if (!(instr instanceof LocalsInit)) {
-			label = getTarget(stmt);
-
-			if (label != null) {
-				if (!tmpTargetLabel.equals(label)) {
-					tmpTargetLabel = label;
-				} else {
-					label = new Label("Label_" + String.valueOf(labelID));
-					labelID++;
-				}
-
-			} else {
-				label = new Label("Label_" + String.valueOf(labelID));
-				labelID++;
-			}
-
-		}
+		label = new Label("Label_" + String.valueOf(labelID));
+		labelID++;
 
 		instr.setLabel(label);
 
 		return instr;
 	}
+
 }

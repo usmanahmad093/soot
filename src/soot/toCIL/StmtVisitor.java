@@ -69,8 +69,6 @@ import soot.jimple.ThisRef;
 import soot.jimple.ThrowStmt;
 import soot.jimple.VirtualInvokeExpr;
 import soot.jimple.internal.JArrayRef;
-import soot.toCIL.instructions.Brfalse;
-import soot.toCIL.instructions.Brtrue;
 import soot.toCIL.instructions.Ceq;
 import soot.toCIL.instructions.Dup;
 import soot.toCIL.instructions.EndFinally;
@@ -78,6 +76,7 @@ import soot.toCIL.instructions.EnterMonitor;
 import soot.toCIL.instructions.ExitMonitor;
 import soot.toCIL.instructions.Instruction;
 import soot.toCIL.instructions.Ldarg;
+import soot.toCIL.instructions.Ldelem;
 import soot.toCIL.instructions.Ldfld;
 import soot.toCIL.instructions.Ldsfld;
 import soot.toCIL.instructions.LoadInstruction;
@@ -96,6 +95,8 @@ import soot.toCIL.instructions.catchsection.BeginCatchSection;
 import soot.toCIL.instructions.catchsection.EndCatchSection;
 import soot.toCIL.instructions.jumps.Beq;
 import soot.toCIL.instructions.jumps.Br;
+import soot.toCIL.instructions.jumps.Brfalse;
+import soot.toCIL.instructions.jumps.Brtrue;
 import soot.toCIL.instructions.jumps.Leave;
 import soot.toCIL.structures.CILModifiers;
 import soot.toCIL.structures.Class;
@@ -127,6 +128,10 @@ public class StmtVisitor implements StmtSwitch {
 
 	public void setConstant(soot.toCIL.structures.Constant constant) {
 		this.constant = constant;
+	}
+	
+	public soot.toCIL.structures.Constant getConstant() {
+		return constant;
 	}
 
 	@Override
@@ -272,7 +277,13 @@ public class StmtVisitor implements StmtSwitch {
 				buildRightSide(rhs, stmt);
 
 				try {
-					buildInstruction(BuildStoreInstruction(lhs, stmt));
+					StoreInstruction storeInstr = BuildStoreInstruction(lhs, stmt);
+					
+					if (exprV.getCILInstructionsForCMPExpr().size() != 0) {
+						CreateCILInstructionsForCmpExpr(storeInstr, stmt);
+					} else {
+					   buildInstruction(storeInstr);  
+					}
 				} catch (ClassNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -308,6 +319,39 @@ public class StmtVisitor implements StmtSwitch {
 			m.InsertEditedLocalVariable(localVariable);
 		}
 
+	}
+
+	private void CreateCILInstructionsForCmpExpr(Instruction instruction, Stmt stmt) {
+		final int LDVARIABLE1 = 0;
+		final int LDVARIABLE2 = 1;
+		final int CGTINSTRUCTION = 2;
+		final int POPINSTRUCTION = 3;
+		final int CEQINSTRUCTION = 4;
+		final int LOADMINUSONE = 5;
+		final int LOADZIRO = 6;
+		final int MULINSTRUCTION = 7;
+		
+		ArrayList<Instruction> cilInstructionsForCmpExpr = exprV.getCILInstructionsForCMPExpr();
+		
+		instruction = LabelAssigner.getInstance().AssignLabelToInstruction(instruction);
+		
+		buildInstruction(cilInstructionsForCmpExpr.get(LDVARIABLE1));
+		buildInstruction(cilInstructionsForCmpExpr.get(LDVARIABLE2));
+		buildInstruction(cilInstructionsForCmpExpr.get(CGTINSTRUCTION));
+		buildInstruction(new Brtrue(instruction.getLabel(), stmt));
+		buildInstruction(cilInstructionsForCmpExpr.get(POPINSTRUCTION));
+		
+		buildInstruction(cilInstructionsForCmpExpr.get(LDVARIABLE1));
+		buildInstruction(cilInstructionsForCmpExpr.get(LDVARIABLE2));
+		buildInstruction(cilInstructionsForCmpExpr.get(CEQINSTRUCTION));
+		buildInstruction(new Brtrue(cilInstructionsForCmpExpr.get(LOADZIRO).getLabel(), stmt));
+		buildInstruction(cilInstructionsForCmpExpr.get(POPINSTRUCTION));
+		
+		buildInstruction(cilInstructionsForCmpExpr.get(LOADMINUSONE));
+		buildInstruction(new Br(instruction.getLabel(), stmt));
+		buildInstruction(cilInstructionsForCmpExpr.get(LOADZIRO));
+		buildInstruction(cilInstructionsForCmpExpr.get(MULINSTRUCTION));
+		buildInstruction(instruction);
 	}
 
 	public void buildRightSide(Value rhs, AssignStmt stmt) {
@@ -346,8 +390,8 @@ public class StmtVisitor implements StmtSwitch {
 			buildInstruction(loadInstr);
 			buildInstruction(loadInstr2);
 
-			Stelem stelemInstr = new Stelem(stmt);
-			buildInstruction(stelemInstr);
+			Ldelem ldelemInstr = new Ldelem(stmt);
+			buildInstruction(ldelemInstr);
 		} else {
 			rhs.apply(exprV);
 		}

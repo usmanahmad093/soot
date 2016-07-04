@@ -43,7 +43,11 @@ public class CILMethodBuilder {
 			methodName = sootMethod.getName();
 			if (isVirtualMethod(sootMethod, superClass)) {
 				sb.append(" hidebysig virtual ");
-				sb.append(modifiers[CILModifiers.C_FINAL]);
+				
+				if (sootMethod.isFinal()) {
+					sb.append("final");
+				}
+				
 				sb.append(" instance ");
 			} else if (checkInterfaceMethod(sootMethod, interfaces)) {
 				sb.append(" hidebysig newslot virtual final instance ");

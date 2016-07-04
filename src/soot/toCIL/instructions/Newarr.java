@@ -13,18 +13,19 @@ public class Newarr implements Instruction {
 	private String typeInString;
 	private int dimensions;
 
-	public Newarr(Stmt stmt, Type type, String typeInString, int dimensions) {
-		final int REMOVEBRACKETS = 2;
+	public Newarr(Stmt stmt, Type type, String typeInString, int dimensions, int maxDimensions) {
+		final int REMOVEBRACKETS = 2 * maxDimensions;
 		final int REMOVECLASSPATTERN = 6;
 
 		this.stmt = stmt;
 		this.type = type;
 		this.dimensions = dimensions;
 
-		// Remove '[]':
-
+		// Remove Brackets '[]':
 		if (Converter.getInstance().isClassType()) {
-			typeInString = typeInString.substring(REMOVECLASSPATTERN, typeInString.length() - REMOVEBRACKETS);
+			typeInString = typeInString.substring(REMOVECLASSPATTERN, typeInString.length() - REMOVEBRACKETS); //Remove 'class'
+		} else {
+			typeInString = typeInString.substring(0, typeInString.length() - REMOVEBRACKETS);
 		}
 
 		this.typeInString = typeInString;

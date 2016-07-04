@@ -39,15 +39,17 @@ public class Converter {
 
 	public String getTypeInString(soot.Type askedType) {
 		String finalType = null;
-		final String BRACKETS = "[]";
-
-		if (askedType instanceof soot.ArrayType) {
+		String BRACKETS = "";
+		
+		
+		while (askedType instanceof soot.ArrayType) {
 			ArrayType arrayType = (soot.ArrayType) askedType;
-			finalType = Converter.getInstance().ConvertWrapperOrPrimitiveTypeInCIL(arrayType.getElementType());
-			finalType += BRACKETS;
-		} else {
-			finalType = Converter.getInstance().ConvertWrapperOrPrimitiveTypeInCIL(askedType);
-		}
+			askedType = arrayType.getElementType();
+			BRACKETS += "[]";
+		} 
+		
+		
+	    finalType = Converter.getInstance().ConvertWrapperOrPrimitiveTypeInCIL(askedType) + BRACKETS;
 
 		return finalType;
 
@@ -121,7 +123,7 @@ public class Converter {
 	public Type getTypeInEnum(soot.Type askedType) {
 		
 		
-		if (askedType instanceof soot.ArrayType) {
+		while (askedType instanceof soot.ArrayType) {
 			askedType = ((soot.ArrayType) askedType).getElementType();
 		}
 		
@@ -170,5 +172,7 @@ public class Converter {
 		isClassType = true;
 		return Type.OTHER;
 	}
+	
+
 
 }

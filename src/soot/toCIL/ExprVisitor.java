@@ -22,6 +22,7 @@
 package soot.toCIL;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -96,10 +97,12 @@ import soot.toCIL.instructions.Neg;
 import soot.toCIL.instructions.Newarr;
 import soot.toCIL.instructions.Newobj;
 import soot.toCIL.instructions.Or;
+import soot.toCIL.instructions.Pop;
 import soot.toCIL.instructions.Rem;
 import soot.toCIL.instructions.Shl;
 import soot.toCIL.instructions.Shr;
 import soot.toCIL.instructions.ShrUn;
+import soot.toCIL.instructions.Stelem;
 import soot.toCIL.instructions.Sub;
 import soot.toCIL.instructions.Xor;
 import soot.toCIL.instructions.jumps.Beq;
@@ -121,12 +124,18 @@ public class ExprVisitor implements ExprSwitch {
 	private Stmt target;
 	private boolean trueComparision;
 	private Method m;
+	
+	private ArrayList<Instruction> CILInstructionsForCMPExpr = new ArrayList<>();
 
 	public ExprVisitor(StmtVisitor stmtV, ConstantVisitor constantV, Method m) {
 		this.stmtV = stmtV;
 		this.constantV = constantV;
 		this.trueComparision = false;
 		this.m = m;
+	}
+	
+	public ArrayList<Instruction> getCILInstructionsForCMPExpr() {
+		return CILInstructionsForCMPExpr;
 	}
 
 	public void setOriginStmt(Stmt originStmt) {
@@ -186,29 +195,48 @@ public class ExprVisitor implements ExprSwitch {
 
 	@Override
 	public void caseCmpExpr(CmpExpr v) {
+		
 		Value operand1 = v.getOp1();
 		Value operand2 = v.getOp2();
+
+		LoadInstruction ldVariable1 = stmtV.BuildLoadInstruction(operand1, originStmt);
+		LoadInstruction ldVariable2 = stmtV.BuildLoadInstruction(operand2, originStmt);
+		Cgt cgtInstruction = new Cgt(originStmt);
+		//Brtrue Label
+		Pop popInstruction = new Pop(originStmt);
+		Ceq ceqInstruction = new Ceq(originStmt);
+		//BrTrue label
+		LoadInstruction loadMinusOne = new LoadInstruction(new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT, "0xFFFFFF"), null, originStmt);
+		//Br Label
+		LoadInstruction LoadZiro = new LoadInstruction(new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT, "0"), null, originStmt);
+		Mul mulInstruction = new Mul(originStmt);
 		
-		LoadInstruction loadInstr = stmtV.BuildLoadInstruction(operand1, originStmt);
-		LoadInstruction loadInstr2 = stmtV.BuildLoadInstruction(operand2, originStmt);
-		Cgt cgtInstr = new Cgt(originStmt);
 		
-		//TODO: Später
+		LoadZiro = (LoadInstruction) LabelAssigner.getInstance().AssignLabelToInstruction(LoadZiro);
+		
+		CILInstructionsForCMPExpr.add(ldVariable1);
+		CILInstructionsForCMPExpr.add(ldVariable2);
+		CILInstructionsForCMPExpr.add(cgtInstruction);
+		CILInstructionsForCMPExpr.add(popInstruction);
+		CILInstructionsForCMPExpr.add(ceqInstruction);
+		CILInstructionsForCMPExpr.add(loadMinusOne);
+		CILInstructionsForCMPExpr.add(LoadZiro);
+		CILInstructionsForCMPExpr.add(mulInstruction);
 
 	}
 
 	@Override
 	public void caseCmpgExpr(CmpgExpr v) {
 		System.out.println("CmpgExpr");
-		
+
 		Value operand1 = v.getOp1();
 		Value operand2 = v.getOp2();
-		
+
 		LoadInstruction loadOperand1 = stmtV.BuildLoadInstruction(operand1, originStmt);
 		LoadInstruction loadOperand2 = stmtV.BuildLoadInstruction(operand2, originStmt);
-		
+
 		Cgt cgtInstr = new Cgt(originStmt);
-		
+
 		stmtV.buildInstruction(loadOperand1);
 		stmtV.buildInstruction(loadOperand2);
 		stmtV.buildInstruction(cgtInstr);
@@ -217,27 +245,26 @@ public class ExprVisitor implements ExprSwitch {
 	@Override
 	public void caseCmplExpr(CmplExpr v) {
 		System.out.println("CmplExpr");
-		
+
 		Value operand1 = v.getOp1();
 		Value operand2 = v.getOp2();
-		
-		soot.toCIL.structures.Constant constant = new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT, "-1");
-		
+
+		soot.toCIL.structures.Constant constant = new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT,
+				"-1");
+
 		LoadInstruction loadOperand1 = stmtV.BuildLoadInstruction(operand1, originStmt);
 		LoadInstruction loadOperand2 = stmtV.BuildLoadInstruction(operand2, originStmt);
 		LoadInstruction loadConstant = new LoadInstruction(constant, null, originStmt);
 		Mul mulInstr = new Mul(originStmt);
-		
-		
+
 		Clt cltInstr = new Clt(originStmt);
-		
+
 		stmtV.buildInstruction(loadOperand1);
 		stmtV.buildInstruction(loadOperand2);
 		stmtV.buildInstruction(cltInstr);
 		stmtV.buildInstruction(loadConstant);
 		stmtV.buildInstruction(mulInstr);
-		
-		
+
 	}
 
 	@Override
@@ -274,7 +301,6 @@ public class ExprVisitor implements ExprSwitch {
 		stmtV.buildInstruction(loadInstr1);
 		stmtV.buildInstruction(loadInstr2);
 		stmtV.buildInstruction(beqInstruction);
-
 	}
 
 	@Override
@@ -504,7 +530,6 @@ public class ExprVisitor implements ExprSwitch {
 	@Override
 	public void caseInterfaceInvokeExpr(InterfaceInvokeExpr v) {
 
-
 		String methodName = v.getMethod().getName();
 		String returnType = null;
 
@@ -536,11 +561,11 @@ public class ExprVisitor implements ExprSwitch {
 		returnType = Converter.getInstance().getTypeInString(v.getMethod().getReturnType());
 		List<Value> allArguments = v.getArgs();
 		ArrayList<String> allArgumentTypes = new ArrayList<>();
-		ArrayList<LoadInstruction>loadInstrForPassingValues = new ArrayList<>();
+		ArrayList<LoadInstruction> loadInstrForPassingValues = new ArrayList<>();
 
 		for (Value value : allArguments) {
 			LoadInstruction loadInstr = stmtV.BuildLoadInstruction(value, originStmt);
-			//stmtV.buildInstruction(loadInstr);
+			// stmtV.buildInstruction(loadInstr);
 			loadInstrForPassingValues.add(loadInstr);
 
 			allArgumentTypes.add(Converter.getInstance().getTypeInString(value.getType()));
@@ -551,19 +576,20 @@ public class ExprVisitor implements ExprSwitch {
 		LocalVariables localVariable = m.getLocalVariableByValue((Local) leftValue);
 
 		if (localVariable.assignedByThisRef()) {
-			//String className = v.getMethod().getDeclaringClass().getName();
-			//className = (className.equals(Object.class.getName())) ? "[mscorlib]System.Object" : className;
+			// String className = v.getMethod().getDeclaringClass().getName();
+			// className = (className.equals(Object.class.getName())) ?
+			// "[mscorlib]System.Object" : className;
 			RefType type = v.getMethod().getDeclaringClass().getType();
 			String className = Converter.getInstance().getTypeInString(type);
 			Ldarg ldargInstruction = new Ldarg(0, originStmt);
 			Callctor callInstruction = new Callctor(returnType, className, originStmt, allArgumentTypes);
 
 			stmtV.buildInstruction(ldargInstruction);
-			
-			for(LoadInstruction loadInstr: loadInstrForPassingValues) {
+
+			for (LoadInstruction loadInstr : loadInstrForPassingValues) {
 				stmtV.buildInstruction(loadInstr);
 			}
-			
+
 			stmtV.buildInstruction(callInstruction);
 
 		} else {
@@ -572,11 +598,10 @@ public class ExprVisitor implements ExprSwitch {
 
 			Newobj newobjInstruction = new Newobj(returnType, className, allArgumentTypes, originStmt);
 
-			
-			for(LoadInstruction loadInstr: loadInstrForPassingValues) {
+			for (LoadInstruction loadInstr : loadInstrForPassingValues) {
 				stmtV.buildInstruction(loadInstr);
 			}
-			
+
 			stmtV.buildInstruction(newobjInstruction);
 
 			soot.toCIL.instructions.StoreInstruction storeInstr = null;
@@ -600,7 +625,6 @@ public class ExprVisitor implements ExprSwitch {
 
 		String returnType = Converter.getInstance().getTypeInString(v.getMethod().getReturnType());
 
-
 		List<Value> allArguments = v.getArgs();
 		ArrayList<String> allArgumentTypes = new ArrayList<>();
 
@@ -619,11 +643,11 @@ public class ExprVisitor implements ExprSwitch {
 
 	@Override
 	public void caseVirtualInvokeExpr(VirtualInvokeExpr v) {
-		
+
 		if (m.getMethodName().equals("TestClassesWithInterfaces")) {
 			int debug = 0;
 		}
-		
+
 		Value leftValue = v.getBase();
 
 		String methodName = v.getMethod().getName();
@@ -658,11 +682,11 @@ public class ExprVisitor implements ExprSwitch {
 		Value operand = v.getOp();
 		soot.toCIL.structures.Type cilType = Converter.getInstance().getTypeInEnum(castType);
 		String classType = null;
-		
+
 		if (!Converter.getInstance().isClassType()) {
 			classType = Converter.getInstance().getClassType(castType);
 		}
-		
+
 		LoadInstruction loadValueInstr = stmtV.BuildLoadInstruction(operand, originStmt);
 		CastInstruction castInstruction = new CastInstruction(originStmt, cilType, classType);
 
@@ -676,21 +700,22 @@ public class ExprVisitor implements ExprSwitch {
 		Type type = v.getType();
 		String cilType = Converter.getInstance().getTypeInString(type);
 		Value op = v.getOp();
-		
+
 		LoadInstruction loadOperand = stmtV.BuildLoadInstruction(op, originStmt);
 		Isinst isinstInstruction = new Isinst(originStmt, cilType);
-		
-		soot.toCIL.structures.Constant cilConstant = new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.NULL, "null");
+
+		soot.toCIL.structures.Constant cilConstant = new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.NULL,
+				"null");
 		LoadInstruction loadNullConstant = new LoadInstruction(cilConstant, null, originStmt);
 		Ceq ceqInstr = new Ceq(originStmt);
-		
+
 		stmtV.buildInstruction(loadOperand);
 		stmtV.buildInstruction(isinstInstruction);
 		stmtV.buildInstruction(loadNullConstant);
 		stmtV.buildInstruction(ceqInstr);
 	}
 
-	//TODO: Testing
+	// TODO: Testing
 	@Override
 	public void caseNewArrayExpr(NewArrayExpr v) {
 		final int oneDimensional = 1;
@@ -698,23 +723,25 @@ public class ExprVisitor implements ExprSwitch {
 		String typeInString = Converter.getInstance().getTypeInString(v.getType());
 		soot.toCIL.structures.Type type = Converter.getInstance().getTypeInEnum(v.getType());
 		LoadInstruction loadInstr = stmtV.BuildLoadInstruction(arraySize, originStmt);
-		Newarr newarrInstr = new Newarr(originStmt, type, typeInString, oneDimensional);
-		
+		Newarr newarrInstr = new Newarr(originStmt, type, typeInString, oneDimensional, oneDimensional);
+
 		stmtV.buildInstruction(loadInstr);
 		stmtV.buildInstruction(newarrInstr);
 	}
 
 	@Override
 	public void caseNewMultiArrayExpr(NewMultiArrayExpr v) {
-		final int lastDimension = 1;
-		List<Value> arraySize = v.getSizes();
+		
+		/*TODO
+		List<Value> arraySizes = v.getSizes();
+		HashMap<Integer, ArrayList<LoadInstruction>> executedLoadInstructions = HashMapInitialization(arraySizes);
+
 		Type sootType = v.getType();
-		int arrayDimensions = v.getSizeCount();
 		String typeInString = Converter.getInstance().getTypeInString(v.getType());
 		soot.toCIL.structures.Type type = Converter.getInstance().getTypeInEnum(v.getType());
-		AssignStmt assignStmt = (AssignStmt)originStmt;
+		AssignStmt assignStmt = (AssignStmt) originStmt;
 		Value multiArray = assignStmt.getLeftOp();
-		
+
 		soot.toCIL.instructions.StoreInstruction storeIntoArray = null;
 		try {
 			storeIntoArray = stmtV.BuildStoreInstruction(multiArray, originStmt);
@@ -722,41 +749,53 @@ public class ExprVisitor implements ExprSwitch {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
-		for(int currentDimension = arrayDimensions - 1; currentDimension >= 0; currentDimension--) {
-			
-			LoadInstruction currentArraySize = stmtV.BuildLoadInstruction(null, originStmt); //TODO: ArraySize
-			Newarr newArrInstr = new Newarr(originStmt, type, typeInString, currentDimension);
-			
-			stmtV.buildInstruction(currentArraySize);
-			stmtV.buildInstruction(newArrInstr);
-			
-			if (currentDimension != lastDimension) {
-				stmtV.buildInstruction(storeIntoArray);
-				stmtV.buildInstruction(stmtV.BuildLoadInstruction(multiArray, originStmt));
-			} else {
+
+		Value firstDimensionSize = arraySizes.get(0);
+		LoadInstruction loadArray = stmtV.BuildLoadInstruction(multiArray, originStmt);
+		LoadInstruction loadFirstDSize = stmtV.BuildLoadInstruction(firstDimensionSize, originStmt);
+		Newarr firstArrInitialization = new Newarr(originStmt, type, typeInString, arraySizes.size() - 1, arraySizes.size());
+
+		stmtV.buildInstruction(loadFirstDSize);
+		stmtV.buildInstruction(firstArrInitialization);
+		stmtV.buildInstruction(storeIntoArray);
+
+		for (int key : executedLoadInstructions.keySet()) {
+			ArrayList<LoadInstruction> instructions = executedLoadInstructions.get(key);
+			soot.toCIL.structures.Constant constant = new soot.toCIL.structures.Constant(soot.toCIL.structures.Type.INT,
+					String.valueOf(key));
+			LoadInstruction loadDimension = new LoadInstruction(constant, null, originStmt);
+
+			for (LoadInstruction loadSize : instructions) {
+				Newarr newarr = new Newarr(originStmt, type, typeInString, arraySizes.size() - (key + 2), arraySizes.size());
+				StelemRef stelemInstr = new StelemRef(originStmt);
 				
+				stmtV.buildInstruction(loadArray);
+				stmtV.buildInstruction(loadDimension);
+				stmtV.buildInstruction(loadSize);
+				stmtV.buildInstruction(newarr);
+				stmtV.buildInstruction(stelemInstr);
 			}
 		}
+		*/
 	}
+
 
 	@Override
 	public void caseNewExpr(NewExpr v) {
 		return;
 	}
 
-	//TODO: Testen
+	// TODO: Testen
 	@Override
 	public void caseLengthExpr(LengthExpr v) {
 		// TODO Auto-generated method stub
 		System.out.println("Length Expr");
-		
+
 		Value value = v.getOp();
-		
+
 		LoadInstruction loadInstr = stmtV.BuildLoadInstruction(value, originStmt);
 		Ldlen ldlenInstr = new Ldlen(originStmt);
-		
+
 		stmtV.buildInstruction(loadInstr);
 		stmtV.buildInstruction(ldlenInstr);
 	}
@@ -767,10 +806,10 @@ public class ExprVisitor implements ExprSwitch {
 	@Override
 	public void caseNegExpr(NegExpr v) {
 		Value source = v.getOp();
-		
+
 		LoadInstruction loadInstr = stmtV.BuildLoadInstruction(source, originStmt);
 		Neg negInstr = new Neg(originStmt);
-		
+
 		stmtV.buildInstruction(loadInstr);
 		stmtV.buildInstruction(negInstr);
 

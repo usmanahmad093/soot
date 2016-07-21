@@ -59,7 +59,6 @@ public class CILDemoMode {
 	private Class refClass;
 	int hashmapSize = 0;
 	public static final String STRANGE_TYPE = "byte";
-	
 
 	int test;
 
@@ -75,10 +74,10 @@ public class CILDemoMode {
 				System.out.println(method.getName());
 
 				Chain<Trap> allTraps = b.getTraps();
-				
-				//if (allTraps.size() != 0) {
-					System.out.println(b.toString());
-				//}
+
+				// if (allTraps.size() != 0) {
+				System.out.println(b.toString());
+				// }
 
 				for (Trap t : allTraps) {
 					System.out.println("Beginunit: " + t.getBeginUnit().toString());
@@ -86,13 +85,10 @@ public class CILDemoMode {
 					System.out.println("Exception: " + t.getException().toString());
 					System.out.println("Typ: " + t.getException().getType());
 					System.out.println("Handler: " + t.getHandlerUnit().toString());
-					
+
 					JIdentityStmt u = (JIdentityStmt) t.getHandlerUnit();
 					CaughtExceptionRef ref = (CaughtExceptionRef) u.getRightOp();
-					
-					
-					
-				
+
 					System.out.println("");
 				}
 
@@ -213,8 +209,6 @@ public class CILDemoMode {
 		for (SootMethod sootMethod : clazz.getMethods()) {
 
 			soot.toCIL.structures.Method cilMethod;
-			
-			
 
 			cilMethod = new soot.toCIL.structures.Method(sootMethod, refClass);
 
@@ -230,7 +224,6 @@ public class CILDemoMode {
 				cilMethod.setTraps(allTraps);
 
 				Chain<Local> allLocals = body.getLocals();
-				
 
 				addVariables(allLocals, cilMethod);
 
@@ -316,15 +309,19 @@ public class CILDemoMode {
 		// Local Variables
 		for (Local l : allLocals) {
 
-			String type = Converter.getInstance().getTypeInString(l.getType());
+			if (!SpecialcasesToIgnore.isPrintStreamVariable(l)) {
+				String type = Converter.getInstance().getTypeInString(l.getType());
 
-			// TODO: wie kann ich den modfier einer lokalen Variable abrufen?
-			String name = l.getName();
-			if (l.getName().equals(SPECIALCASE)) {
-				name = "'" + name + "'";
+				// TODO: wie kann ich den modfier einer lokalen Variable
+				// abrufen?
+				String name = l.getName();
+				if (l.getName().equals(SPECIALCASE)) {
+					name = "'" + name + "'";
+				}
+				LocalVariables var = new LocalVariables(name, type);
+				allVariables.add(var);
+
 			}
-			LocalVariables var = new LocalVariables(name, type);
-			allVariables.add(var);
 		}
 
 		cilMethod.setVariables(allVariables);
@@ -350,11 +347,12 @@ public class CILDemoMode {
 		cilMethod.setParameters(allParameters);
 	}
 
-	private void transformAndAddInstructions(PatchingChain<Unit> allUnits, soot.toCIL.structures.Method cilMethod, Chain<Trap> allTraps) {
+	private void transformAndAddInstructions(PatchingChain<Unit> allUnits, soot.toCIL.structures.Method cilMethod,
+			Chain<Trap> allTraps) {
 		ArrayList<LocalVariables> allVariables = cilMethod.getAllVariables();
 		StmtVisitor stmtV = new StmtVisitor(cilMethod);
 		final boolean successfull = true;
-		
+
 		// If Variables declared, add LocalsInit Instruction
 		if (allVariables.size() != 0) {
 			LocalsInit initInstruction = new LocalsInit(allVariables);
@@ -362,21 +360,22 @@ public class CILDemoMode {
 		}
 
 		for (Unit u : allUnits) {
-			
-			Stmt stmt = (Stmt) u;
-			
-			
-			
-			if (cilMethod.getTrapBeginUnitByStmt(stmt) != null) {
-				BeginTrySection tryInstruction = new BeginTrySection(stmt);
-				cilMethod.addInstruction(tryInstruction);
-			}
-			
-			u.apply(stmtV);
-			
-			if (cilMethod.getTrapEndUnitByStmt(stmt) != null) {
-				EndTrySection endTrySection = new EndTrySection(stmt);
-				cilMethod.addInstruction(endTrySection);
+
+			if (!SpecialcasesToIgnore.isPrintStreamAssignment(u)) {
+
+				Stmt stmt = (Stmt) u;
+
+				if (cilMethod.getTrapBeginUnitByStmt(stmt) != null) {
+					BeginTrySection tryInstruction = new BeginTrySection(stmt);
+					cilMethod.addInstruction(tryInstruction);
+				}
+
+				u.apply(stmtV);
+
+				if (cilMethod.getTrapEndUnitByStmt(stmt) != null) {
+					EndTrySection endTrySection = new EndTrySection(stmt);
+					cilMethod.addInstruction(endTrySection);
+				}
 			}
 		}
 
@@ -385,7 +384,5 @@ public class CILDemoMode {
 		allInstructions = LabelAssigner.getInstance().AssignLabelsToInstructions(allInstructions);
 		cilMethod.setInstructions(allInstructions);
 	}
-
-	
 
 }

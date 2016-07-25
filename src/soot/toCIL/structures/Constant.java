@@ -1,5 +1,10 @@
 package soot.toCIL.structures;
 
+/**
+ * represents a CIL Constant
+ * @author Usman
+ *
+ */
 public class Constant {
 	private Type type;
 	private String value;

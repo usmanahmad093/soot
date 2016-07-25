@@ -1,5 +1,10 @@
 package soot.toCIL.structures;
 
+/**
+ * represents a CIL Parameter
+ * @author Usman
+ *
+ */
 public class Parameter extends Variable {
 	private int index;
 

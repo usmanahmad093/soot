@@ -119,6 +119,12 @@ import soot.toCIL.structures.LocalVariables;
 import soot.toCIL.structures.Method;
 import soot.toCIL.structures.Parameter;
 
+
+/**
+ * determines the Jimple Expression Type with the help of this Visitor Class
+ * @author Usman
+ *
+ */
 public class ExprVisitor implements ExprSwitch {
 
 	private ConstantVisitor constantV;

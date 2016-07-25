@@ -2,6 +2,11 @@ package soot.toCIL.structures;
 
 
 
+/**
+ * represents a CIL Field 
+ * @author Usman
+ *
+ */
 public class Member extends Variable{
 
 	private String cilField;

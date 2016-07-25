@@ -1,5 +1,10 @@
 package soot.toCIL.structures;
 
+/**
+ * represents a CIL Label
+ * @author Usman
+ *
+ */
 public class Label {
 	private String labelName;
 	

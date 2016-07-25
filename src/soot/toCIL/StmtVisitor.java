@@ -107,6 +107,11 @@ import soot.toCIL.structures.Method;
 import soot.toCIL.structures.Parameter;
 import soot.toCIL.structures.Variable;
 
+/**
+ * determines the Jimple Statement Type with the help of this Visitor Class
+ * @author Usman
+ *
+ */
 public class StmtVisitor implements StmtSwitch {
 	private ExprVisitor exprV;
 	private ConstantVisitor constantV;

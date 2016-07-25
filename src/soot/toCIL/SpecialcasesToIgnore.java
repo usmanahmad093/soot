@@ -10,6 +10,12 @@ import soot.jimple.IdentityStmt;
 import soot.jimple.Stmt;
 import soot.jimple.internal.JThrowStmt;
 
+/**
+ * checks all special cases. If a special case occurs: the return argument is true, else: false
+ * If a speical Case occurs: specific CIL Instruction won't be created, else: it will be created
+ * @author Usman
+ *
+ */
 public class SpecialcasesToIgnore {
 	private static String PRINTSTREAM = "class java.io.PrintStream";
 

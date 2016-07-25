@@ -1,5 +1,10 @@
 package soot.toCIL.structures;
 
+/**
+ * contains CIL Modifiers
+ * @author Usman
+ *
+ */
 public class CILModifiers {
 	
 	/*

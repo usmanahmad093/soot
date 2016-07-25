@@ -4,6 +4,12 @@ import java.io.PrintStream;
 
 import soot.jimple.VirtualInvokeExpr;
 
+
+/**
+ * checks all special cases. If a special case occurs: the return argument is true, else: false
+ * @author Usman
+ *
+ */
 public class SpecialCasesToConsider {
 	
 	

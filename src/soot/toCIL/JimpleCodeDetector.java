@@ -7,6 +7,11 @@ import soot.jimple.StaticInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.VirtualInvokeExpr;
 
+/**
+ * checks specialCases
+ * @author Usman
+ *
+ */
 public class JimpleCodeDetector {
 	private static JimpleCodeDetector instance = new JimpleCodeDetector();
 
@@ -109,6 +114,7 @@ public class JimpleCodeDetector {
 		return false;
 	}
 
+	
 	public boolean isCILObject(Value v) {
 		final String patternToSearch = "class";
 

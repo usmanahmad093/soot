@@ -1,5 +1,10 @@
 package soot.toCIL.structures;
 
+/**
+ * realizes a CIL Variable. a variable could be a Field or a local Variable
+ * @author Usman
+ *
+ */
 public abstract class Variable {
 	protected String variableName;
 	protected String variableType;

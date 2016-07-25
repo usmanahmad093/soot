@@ -7,6 +7,11 @@ import soot.ArrayType;
 import soot.RefType;
 import soot.toCIL.structures.Type;
 
+/**
+ * Type Converter
+ * @author Usman
+ *
+ */
 public class Converter {
 	private static Converter instance = new Converter();
 
@@ -37,6 +42,11 @@ public class Converter {
 	}
 	
 
+	/**
+	 * it considers an array checking 
+	 * @param askedType is a Soot Type
+	 * @return soot type in CIl
+	 */
 	public String getTypeInString(soot.Type askedType) {
 		String finalType = null;
 		String BRACKETS = "";
@@ -55,6 +65,11 @@ public class Converter {
 
 	}
 
+	/**
+	 * Converts soot type into CIL 
+	 * @param askedType is a Soot Type
+	 * @return CIL Type in String
+	 */
 	private String ConvertWrapperOrPrimitiveTypeInCIL(soot.Type askedType) {
 		isClassType = false; 
 
@@ -111,15 +126,29 @@ public class Converter {
 		return "class " + askedType.toString();
 	}
 	
+	/**
+	 * checks if its a class type
+	 * @return true: yes
+	 *         false: no
+	 */
 	public boolean isClassType() {
 		return isClassType;
 	}
 	
+	/**
+	 * fetches the Class Type from the object askedType 
+	 * @param askedType is a Soot Type
+	 */
 	public String getClassType(soot.Type askedType) {
 		
 		return askedType.toString();
 	}
 	
+	/**
+	 * converts an askedType object into an Enum Type
+	 * @param askedType
+	 * @return enum
+	 */
 	public Type getTypeInEnum(soot.Type askedType) {
 		
 		

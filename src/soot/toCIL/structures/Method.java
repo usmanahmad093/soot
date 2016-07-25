@@ -22,7 +22,7 @@ import soot.toCIL.instructions.LocalsInit;
 import soot.util.Chain;
 
 /**
- * This class holds the structure of an CIL Method
+ * This class holds the structure of an CIL Method with the help of an Interface named Body
  * 
  * @author ahmad
  *

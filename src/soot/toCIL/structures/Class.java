@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * This class holds the structure of an CIL Class
+ * This class holds the structure of an CIL Class with the help of an Interface named Body
  * 
  * @author ahmad
  *

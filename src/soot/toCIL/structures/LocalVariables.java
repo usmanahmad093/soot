@@ -1,5 +1,10 @@
 package soot.toCIL.structures;
 
+/**
+ * represents a Local Variable in CIL
+ * @author Usman
+ *
+ */
 public class LocalVariables extends Variable {
 
 	private boolean isThisRef;

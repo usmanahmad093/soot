@@ -8,6 +8,11 @@ import soot.toCIL.instructions.Instruction;
 import soot.toCIL.instructions.LocalsInit;
 import soot.toCIL.structures.Label;
 
+/**
+ * assigns Label to every CIL Instructions
+ * @author Usman
+ *
+ */
 public class LabelAssigner {
 	private static LabelAssigner instance = new LabelAssigner();
 	private HashMap<Stmt, Label> allTargetlabels;
@@ -24,6 +29,12 @@ public class LabelAssigner {
 		return instance;
 	}
 
+	/**
+	 * creates a Target Label for a specific CIL Instruction
+	 * @param target: if the CIL Instruction Object contains this target parameter: target Label will be created and returned; 
+	 * else: target label will be returned
+	 * @return Target Label
+	 */
 	public Label CreateTargetLabel(Stmt target) {
 		Label targetLabel = allTargetlabels.get(target);
 
@@ -37,6 +48,11 @@ public class LabelAssigner {
 		return targetLabel;
 	}
 
+	/**
+	 * fetches the target Label with the help of the jimple statement
+	 * @param stmt: realises a jimple statement
+	 * @return CIL Label
+	 */
 	public Label getTarget(Stmt stmt) {
 
 		Label lbl = allTargetlabels.get(stmt);
@@ -44,6 +60,12 @@ public class LabelAssigner {
 		return lbl;
 	}
 
+	/**
+	 * assign labels to CIL Instructions. If CIL Object contains a Target Jimple Statement: Target Label will be assigned,
+	 * else: "normal" Labels will be assigned
+	 * @param allInstructions contains CIL Instructions without Labels
+	 * @return edited CIL Instructions
+	 */
 	public ArrayList<Instruction> AssignLabelsToInstructions(ArrayList<Instruction> allInstructions) {
 
 		Label tmpTargetLabel = new Label();
@@ -78,6 +100,11 @@ public class LabelAssigner {
 		return allInstructions;
 	}
 
+	/**
+	 * Assign a Label to the Instruction
+	 * @param instr realises a CIL Instruction
+	 * @return edited CIL Instruction
+	 */
 	public Instruction AssignLabelToInstruction(Instruction instr) {
 		Label label = new Label();
 

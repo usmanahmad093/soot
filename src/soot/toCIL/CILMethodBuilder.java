@@ -11,8 +11,19 @@ import soot.toCIL.structures.Parameter;
 import soot.toCIL.structures.Variable;
 import soot.util.Chain;
 
+/**
+ * generates a CIL Methoddefinition
+ * @author Usman
+ *
+ */
 public class CILMethodBuilder {
 
+	/**
+	 * generates a CIL Methoddefinition
+	 * @param sootMethod is a Soot Method
+	 * @param allParameters contains all CIL Parameters
+	 * @return CIL Methoddefinition in String Format
+	 */
 	public static String buildCILMethodHeader(SootMethod sootMethod, ArrayList<Parameter> allParameters) {
 		String returnType = Converter.getInstance().getTypeInString(sootMethod.getReturnType());
 		String params = getParamsInString(allParameters);
@@ -79,6 +90,13 @@ public class CILMethodBuilder {
 		return sb.toString();
 	}
 
+	/**
+	 * checks if the Soot Method is a Virtual Method
+	 * @param askedMethod is an asked Soot Method
+	 * @param superClass 
+	 * @return true: it is a Virtual Method;
+	 *         false: it is not a Virtual Method
+	 */
 	private static boolean isVirtualMethod(SootMethod askedMethod, SootClass superClass) {
 
 		List<SootMethod> allMethods = superClass.getMethods();
@@ -92,8 +110,10 @@ public class CILMethodBuilder {
 		return false;
 	}
 
-	/*
+	/**
 	 * This Method checks if the SootMethod is an Interface Method. 
+	 * @param askedMethod
+	 * @param allInterfaces will contain all Interfaces after executing this method
 	 */
 	private static boolean checkInterfaceMethod(SootMethod askedMethod, Chain<SootClass> allInterfaces) {
 
@@ -126,6 +146,14 @@ public class CILMethodBuilder {
 
 	
 
+	/**
+	 * 
+	 * generates a Parameter List
+	 * 
+	 * @param allParameters contains all Parameters after executing this method
+	 *        in String in order to fill the parameter list of the CIL Method
+	 * @return parameter list in String
+	 */
 	public static String getParamsInString(ArrayList<Parameter> allParameters) {
 		String params = "";
 		boolean firstParam = true;

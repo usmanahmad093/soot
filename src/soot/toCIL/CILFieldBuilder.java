@@ -4,6 +4,11 @@ import soot.SootField;
 import soot.SootMethod;
 import soot.toCIL.structures.CILModifiers;
 
+/**
+ * generates a Field Declaration in CIL
+ * @author Usman
+ *
+ */
 public class CILFieldBuilder {
 	private static final String PRIVATE = "private";
 	private static final String PUBLIC = "public";
@@ -12,6 +17,11 @@ public class CILFieldBuilder {
 	private static final String STATIC = "static";
 
 	
+	/**
+	 * Generates a Field declaration in CIL
+	 * @param sootField is a Soot Field
+	 * @return CIL Fielddeclaration in String Format
+	 */
 	public static String buildCILField(SootField sootField) {
 		StringBuilder sb =  new StringBuilder();
 		String[] modifiers = CILModifierBuilder.ModifierBuilder(sootField.getModifiers());

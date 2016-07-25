@@ -11,7 +11,11 @@ import soot.jimple.StringConstant;
 import soot.toCIL.structures.Constant;
 import soot.toCIL.structures.Type;
 
-
+/**
+ * determines the Constant Type with the help of this Visitor Class
+ * @author Usman
+ *
+ */
 public class ConstantVisitor extends AbstractConstantSwitch {
 	private StmtVisitor stmtV;
 	

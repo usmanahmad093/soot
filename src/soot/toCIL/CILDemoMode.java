@@ -18,6 +18,7 @@ import soot.Trap;
 import soot.Type;
 import soot.Unit;
 import soot.jimple.CaughtExceptionRef;
+import soot.jimple.IdentityStmt;
 import soot.jimple.Stmt;
 import soot.jimple.internal.JIdentityStmt;
 import soot.jimple.toolkits.thread.mhp.stmt.BeginStmt;
@@ -52,7 +53,7 @@ import soot.toCIL.structures.Method;
 import soot.toCIL.structures.Parameter;
 import soot.util.Chain;
 
-/*
+/**
  * Only for Test purposes
  */
 public class CILDemoMode {
@@ -65,6 +66,10 @@ public class CILDemoMode {
 	private CILDemoMode() {
 	}
 
+	/**
+	 * shows how the Jimple Code looks like
+	 * @param clazz 
+	 */
 	public void showJimpleBody(SootClass clazz) {
 
 		System.out.println("Class: " + clazz.getName() + " Superclass: " + clazz.getSuperclass());
@@ -99,16 +104,25 @@ public class CILDemoMode {
 
 	}
 
+	
+	/**
+	 * shows how the Jimple Code looks like
+	 * @param clazz 
+	 */
 	public void showClass(SootClass clazz) {
 		System.out.println(clazz.toString());
 	}
 
+	/**
+	 * creates new instance of this class type
+	 */
 	public static CILDemoMode getInstance() {
 		return new CILDemoMode();
 	}
 
-	/*
+	/**
 	 * This Method fills the CIL Constructs into the StringBuilder
+	 * @param sbForTextFile will contain CIL Class after executing this method
 	 */
 	public void printCILCode(StringBuilder sbForTextFile) throws IOException {
 
@@ -153,8 +167,10 @@ public class CILDemoMode {
 
 	}
 
-	/*
+	/**
 	 * This Method fills the cil attributes into the StringBuilder
+	 * @param c represents a CIL Class
+	 * @param sbForTextFile will contain cil attributes after executing this method
 	 */
 
 	private void printFields(Class c, StringBuilder sbForTextFile) {
@@ -175,6 +191,7 @@ public class CILDemoMode {
 
 	/**
 	 * Only For Testing purposes
+	 * @param clazz
 	 */
 	public void demoInnerClass(SootClass clazz) {
 		if (clazz.isInnerClass()) {
@@ -182,8 +199,11 @@ public class CILDemoMode {
 		}
 	}
 
-	/*
-	 * This Method converts the Jimple Code in CIL Code
+
+	/**
+	 * converts Soot Class Into Jimple
+	 * @param clazz is a Soot Class
+	 * @throws ClassNotFoundException
 	 */
 	public void transformJimpleToCIL(SootClass clazz) throws ClassNotFoundException {
 
@@ -236,10 +256,10 @@ public class CILDemoMode {
 
 	}
 
-	/*
+	/**
 	 * This function detects how many Values should be maximal pushed into Stack
+	 * @param cilMethod represents a Method in CIL
 	 */
-
 	private void detectMaxStack(soot.toCIL.structures.Method cilMethod) {
 		int countStackElements = 0;
 		int maxStack = 0;
@@ -299,8 +319,11 @@ public class CILDemoMode {
 
 	}
 
-	/*
+	/**
 	 * Add Local Variables into the Collection
+	 * 
+	 * @param allLocals will contain all Local Variables after executing this method
+	 * @param cilMethod represents a method in CIL
 	 */
 	private void addVariables(Chain<Local> allLocals, Method cilMethod) throws ClassNotFoundException {
 		ArrayList<LocalVariables> allVariables = new ArrayList<>();
@@ -309,11 +332,14 @@ public class CILDemoMode {
 		// Local Variables
 		for (Local l : allLocals) {
 
+			if (cilMethod.getMethodName().equals("Outputtest")) {
+				int debugging = 1;
+			}
+
 			if (!SpecialcasesToIgnore.isPrintStreamVariable(l)) {
 				String type = Converter.getInstance().getTypeInString(l.getType());
 
-				// TODO: wie kann ich den modfier einer lokalen Variable
-				// abrufen?
+				//Specialcase array name = array
 				String name = l.getName();
 				if (l.getName().equals(SPECIALCASE)) {
 					name = "'" + name + "'";
@@ -327,8 +353,10 @@ public class CILDemoMode {
 		cilMethod.setVariables(allVariables);
 	}
 
-	/*
+	/**
 	 * Add Parameters into the Collection
+	 * @param allTypes will contain all Types of the Soot Parameters after executing this method
+	 * @param cilMethod represents a Method in CILs
 	 */
 	private void addParams(List<Type> allTypes, soot.toCIL.structures.Method cilMethod) throws ClassNotFoundException {
 		ArrayList<Parameter> allParameters = new ArrayList<>();
@@ -347,6 +375,14 @@ public class CILDemoMode {
 		cilMethod.setParameters(allParameters);
 	}
 
+	
+	/**
+	 * converts all Jimple Statements into CIL Instructions
+	 * 
+	 * @param allUnits: every Unit represents a Jimple Statement
+	 * @param cilMethod represents a Method in CIL
+	 * @param allTraps: it is a helpful Collection in order to determine the try - and catch - section
+	 */
 	private void transformAndAddInstructions(PatchingChain<Unit> allUnits, soot.toCIL.structures.Method cilMethod,
 			Chain<Trap> allTraps) {
 		ArrayList<LocalVariables> allVariables = cilMethod.getAllVariables();
@@ -366,15 +402,22 @@ public class CILDemoMode {
 				Stmt stmt = (Stmt) u;
 
 				if (cilMethod.getTrapBeginUnitByStmt(stmt) != null) {
-					BeginTrySection tryInstruction = new BeginTrySection(stmt);
-					cilMethod.addInstruction(tryInstruction);
+					if (!SpecialcasesToIgnore.isCatchSection(stmt)) {
+
+						BeginTrySection tryInstruction = new BeginTrySection(stmt);
+						cilMethod.addInstruction(tryInstruction);
+
+					}
+
 				}
 
 				u.apply(stmtV);
 
 				if (cilMethod.getTrapEndUnitByStmt(stmt) != null) {
-					EndTrySection endTrySection = new EndTrySection(stmt);
-					cilMethod.addInstruction(endTrySection);
+					if (!SpecialcasesToIgnore.isEndCatchSection(stmt)) {
+						EndTrySection endTrySection = new EndTrySection(stmt);
+						cilMethod.addInstruction(endTrySection);
+					}
 				}
 			}
 		}

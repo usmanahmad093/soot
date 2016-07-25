@@ -6,12 +6,21 @@ import java.util.ArrayList;
 import soot.SootClass;
 import soot.toCIL.structures.CILModifiers;
 
-
+/**
+ * generates a Class Definition in CIL
+ * @author Usman
+ *
+ */
 public class CILClassBuilder {
 	private static final String OBJECT_CLASS = "[mscorlib]System.Object";
 	private static ArrayList<SootClass> baseInterfaces = new ArrayList<>();
 
 	
+	/**
+	 * generates a class definition in CIL
+	 * @param sootClass is a Soot Class
+	 * @return class definition in CIL
+	 */
 	public static String buildCILClassHeader(SootClass sootClass) {
 		baseInterfaces = new ArrayList<>();
 		fillInterfaces(sootClass);
@@ -89,8 +98,9 @@ public class CILClassBuilder {
 		return sb.toString();
 	}
 
-	/*
+	/**
 	 * This Method fills the Interfaces in ArrayList which are implemented by the current SootClass
+	 * @param sootClass is a Soot Class
 	 */
 	private static void fillInterfaces(SootClass sootClass) {
 		SootClass baseClass = null;

@@ -4,9 +4,18 @@ package soot.toCIL;
 import soot.Modifier;
 import soot.toCIL.structures.CILModifiers;
 
+/**
+ * converts the Soot Modifiers into the CIL Modifiers and put the CIL Modifiers into an array.
+ * @author Usman
+ *
+ */
 public class CILModifierBuilder {
 
-	
+	/**
+	 * converts the Soot Modifiers into the CIL Modifiers and put the CIL Modifiers into an array.
+	 * @param flags contains Jimple Modifiers in hex
+	 * @return
+	 */
 	public static String[] ModifierBuilder(int flags) {
 		final int max = 10;
 		
@@ -69,6 +78,12 @@ public class CILModifierBuilder {
 		return modifiers;
 	}
 	
+	
+	/**
+	 * checkes if "flags" contains the modifier "volatile"
+	 * @param flags contains Jimple Modifiers in hex
+	 * @return
+	 */
 	public static boolean isVolatile(int flags) {
 		
 		return ((flags & Modifier.VOLATILE) == Modifier.VOLATILE)? true: false;

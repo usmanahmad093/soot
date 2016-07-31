@@ -71,7 +71,6 @@ import soot.jimple.VirtualInvokeExpr;
 import soot.jimple.internal.JArrayRef;
 import soot.toCIL.instructions.Ceq;
 import soot.toCIL.instructions.Dup;
-import soot.toCIL.instructions.EndFinally;
 import soot.toCIL.instructions.EnterMonitor;
 import soot.toCIL.instructions.ExitMonitor;
 import soot.toCIL.instructions.Instruction;
@@ -343,17 +342,17 @@ public class StmtVisitor implements StmtSwitch {
 		buildInstruction(cilInstructionsForCmpExpr.get(LDVARIABLE1));
 		buildInstruction(cilInstructionsForCmpExpr.get(LDVARIABLE2));
 		buildInstruction(cilInstructionsForCmpExpr.get(CGTINSTRUCTION));
-		buildInstruction(new Brtrue(instruction.getLabel(), stmt));
+		buildInstruction(new Brtrue(instruction.getLabelWithoutSemicolon(), stmt));
 		buildInstruction(cilInstructionsForCmpExpr.get(POPINSTRUCTION));
 		
 		buildInstruction(cilInstructionsForCmpExpr.get(LDVARIABLE1));
 		buildInstruction(cilInstructionsForCmpExpr.get(LDVARIABLE2));
 		buildInstruction(cilInstructionsForCmpExpr.get(CEQINSTRUCTION));
-		buildInstruction(new Brtrue(cilInstructionsForCmpExpr.get(LOADZIRO).getLabel(), stmt));
+		buildInstruction(new Brtrue(cilInstructionsForCmpExpr.get(LOADZIRO).getLabelWithoutSemicolon(), stmt));
 		buildInstruction(cilInstructionsForCmpExpr.get(POPINSTRUCTION));
 		
 		buildInstruction(cilInstructionsForCmpExpr.get(LOADMINUSONE));
-		buildInstruction(new Br(instruction.getLabel(), stmt));
+		buildInstruction(new Br(instruction.getLabelWithoutSemicolon(), stmt));
 		buildInstruction(cilInstructionsForCmpExpr.get(LOADZIRO));
 		buildInstruction(cilInstructionsForCmpExpr.get(MULINSTRUCTION));
 		buildInstruction(instruction);

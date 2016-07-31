@@ -28,10 +28,22 @@ public class Dup implements Instruction{
 		// TODO Auto-generated method stub
 		return label.getLabel() + ": ";
 	}
+	
+	@Override
+	public String getLabelWithoutSemicolon() {
+		// TODO Auto-generated method stub
+		return label.getLabel();
+	}
 
 	@Override
 	public String getInstruction() {
 		// TODO Auto-generated method stub
 		return "dup";
+	}
+	
+	@Override
+	public Label getLabelObject() {
+		// TODO Auto-generated method stub
+		return label;
 	}
 }

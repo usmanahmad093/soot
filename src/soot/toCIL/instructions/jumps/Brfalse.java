@@ -20,6 +20,7 @@ public class Brfalse implements Instruction {
 		// TODO Auto-generated method stub
 		return "brfalse " + targetLabel;
 	}
+	
 
 	@Override
 	public Stmt getStmt() {
@@ -37,6 +38,18 @@ public class Brfalse implements Instruction {
 	public String getLabel() {
 		// TODO Auto-generated method stub
 		return label.getLabel() + ": ";
+	}
+	
+	@Override
+	public String getLabelWithoutSemicolon() {
+		// TODO Auto-generated method stub
+		return label.getLabel();
+	}
+	
+	@Override
+	public Label getLabelObject() {
+		// TODO Auto-generated method stub
+		return label;
 	}
 
 }

@@ -29,6 +29,18 @@ public class FieldInit implements Instruction{
 		// TODO Auto-generated method stub
 		return "";
 	}
+	
+	@Override
+	public String getLabelWithoutSemicolon() {
+		// TODO Auto-generated method stub
+		return "";
+	}
+	
+	@Override
+	public Label getLabelObject() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	@Override
 	public String getInstruction() {

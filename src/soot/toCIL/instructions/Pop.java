@@ -26,6 +26,18 @@ public class Pop implements Instruction{
 	public String getLabel() {
 		return label.getLabel() + ": ";
 	}
+	
+	@Override
+	public String getLabelWithoutSemicolon() {
+		// TODO Auto-generated method stub
+		return label.getLabel();
+	}
+	
+	@Override
+	public Label getLabelObject() {
+		// TODO Auto-generated method stub
+		return label;
+	}
 
 	@Override
 	public String getInstruction() {

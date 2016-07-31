@@ -22,6 +22,18 @@ public class Entrypoint implements Instruction {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public String getLabelWithoutSemicolon() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public Label getLabelObject() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	@Override
 	public String getInstruction() {

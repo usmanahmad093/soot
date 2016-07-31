@@ -12,5 +12,7 @@ public interface Instruction {
 	public Stmt getStmt();
 	public void setLabel(Label label);
 	public String getLabel();
+	public String getLabelWithoutSemicolon();
 	public String getInstruction();
+	public Label getLabelObject();
 }

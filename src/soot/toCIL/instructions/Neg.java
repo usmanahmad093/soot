@@ -34,6 +34,18 @@ public class Neg implements Instruction{
 		// TODO Auto-generated method stub
 		return label.getLabel() + ": ";
 	}
+	
+	@Override
+	public String getLabelWithoutSemicolon() {
+		// TODO Auto-generated method stub
+		return label.getLabel();
+	}
+	
+	@Override
+	public Label getLabelObject() {
+		// TODO Auto-generated method stub
+		return label;
+	}
 
 
 }
